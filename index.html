@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Журнал репетитора</title>
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#3d5afe">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171b21">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Журнал">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233d5afe'/%3E%3Crect x='12' y='16' width='40' height='36' rx='6' fill='white'/%3E%3Crect x='12' y='16' width='40' height='9' rx='4' fill='%23c9d4f0'/%3E%3Crect x='17' y='30' width='9' height='8' rx='2' fill='%23bfe6cf'/%3E%3Crect x='29' y='30' width='9' height='8' rx='2' fill='%23e8ecf3'/%3E%3Crect x='41' y='30' width='9' height='8' rx='2' fill='%23bfe6cf'/%3E%3Crect x='17' y='41' width='9' height='8' rx='2' fill='%23e8ecf3'/%3E%3Crect x='29' y='41' width='9' height='8' rx='2' fill='%23bfe6cf'/%3E%3Ccircle cx='46' cy='47' r='11' fill='%231ebe6e'/%3E%3Cpath d='M40.5 47l4 4 7-8' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+/* ─────────────  ДИЗАЙН-ТОКЕНЫ  ───────────── */
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#fafbfc; --sunken:#eef0f3;
+  --ink:#15181d; --ink-2:#495260; --muted:#828b99; --line:#e2e6ec; --line-2:#eef1f5;
+  --accent:#3d5afe; --accent-soft:#eaeeff; --accent-ink:#2b41c9;
+  --held:#1e8e52; --held-bg:#e3f4ea; --held-bg-2:#d3edde;
+  --late:#b8730a; --late-bg:#fbeeda;
+  --noshow:#c4383c; --noshow-bg:#fbe3e4;
+  --moved:#2f6fd0; --moved-bg:#e3edfb;
+  --free:#7c8698; --free-bg:#f0f2f5;
+  --warn:#d99a12; --danger:#c4383c; --debt:#8c1f22;
+  --today:#f0f3ff; --weekend:#f0f1f4;
+  --radius:10px; --radius-sm:7px;
+  --shadow-1:0 1px 2px rgba(16,22,38,.06),0 1px 1px rgba(16,22,38,.04);
+  --shadow-2:0 12px 34px rgba(16,22,38,.16),0 2px 8px rgba(16,22,38,.08);
+  --row-h:38px; --col-w:34px; --pane-w:224px;
+}
+html[data-theme="dark"]{
+  --bg:#101318; --surface:#171b21; --surface-2:#1c2129; --sunken:#0d1015;
+  --ink:#e9ecf1; --ink-2:#b3bbc7; --muted:#7d8794; --line:#282e37; --line-2:#212730;
+  --accent:#6d86ff; --accent-soft:#1e2540; --accent-ink:#9db0ff;
+  --held:#4cc584; --held-bg:#15301f; --held-bg-2:#1b3e29;
+  --late:#d9a03b; --late-bg:#33280f;
+  --noshow:#e07377; --noshow-bg:#361c1e;
+  --moved:#6ba4f5; --moved-bg:#152539;
+  --free:#8a94a3; --free-bg:#1e232b;
+  --warn:#e0ac2b; --danger:#e07377; --debt:#ff8a8d;
+  --today:#1a2033; --weekend:#0e1116;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --shadow-2:0 14px 40px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-variant-numeric:tabular-nums;
+  display:flex;flex-direction:column;overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{
+  font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:6px 11px;cursor:pointer;white-space:nowrap;
+  transition:background .12s,border-color .12s,color .12s;
+}
+button:hover{background:var(--surface-2);border-color:#c9d0da}
+html[data-theme="dark"] button:hover{border-color:#3a424e}
+button:active{transform:translateY(.5px)}
+button:disabled{opacity:.38;cursor:default;transform:none}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:550}
+button.primary:hover{filter:brightness(1.07)}
+button.ghost{background:transparent;border-color:transparent;color:var(--ink-2)}
+button.ghost:hover{background:var(--sunken);border-color:transparent}
+button.icon{padding:6px 9px;font-size:14px;line-height:1}
+button.danger{color:var(--danger);border-color:var(--line)}
+button.danger:hover{background:var(--noshow-bg);border-color:var(--danger)}
+input,select,textarea{
+  font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:7px 9px;width:100%;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+::placeholder{color:var(--muted)}
+
+/* ─────────────  ШАПКА  ───────────── */
+header{
+  display:flex;align-items:center;gap:7px;padding:9px 14px;background:var(--surface);
+  border-bottom:1px solid var(--line);box-shadow:var(--shadow-1);z-index:10;flex-wrap:wrap;
+}
+.brand{font-size:13.5px;font-weight:650;letter-spacing:-.15px;margin-right:6px;white-space:nowrap}
+.brand span{color:var(--muted);font-weight:450}
+.navgroup{display:flex;align-items:center;background:var(--sunken);border-radius:var(--radius-sm);padding:2px}
+.navgroup button{background:transparent;border:0;padding:5px 9px}
+.navgroup button:hover{background:var(--surface)}
+.month{min-width:140px;text-align:center;font-weight:600;font-size:13px}
+.searchwrap{position:relative}
+.searchwrap input{width:172px;padding-left:28px}
+.searchwrap::before{content:"⌕";position:absolute;left:9px;top:5px;color:var(--muted);font-size:15px}
+.spacer{flex:1}
+.sep{width:1px;height:22px;background:var(--line);margin:0 3px}
+
+/* ─────────────  ПОЛОСА ВНИМАНИЯ  ───────────── */
+.attention{
+  display:flex;align-items:center;gap:7px;padding:7px 14px;background:var(--surface);
+  border-bottom:1px solid var(--line);flex-wrap:wrap;font-size:12px;min-height:36px;
+}
+.attention .lbl{color:var(--muted);margin-right:2px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;
+  padding:3px 10px 3px 8px;cursor:pointer;background:var(--surface-2);font-size:12px;
+}
+.chip:hover{border-color:var(--accent);background:var(--accent-soft)}
+.chip b{font-weight:650}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.dot.warn{background:var(--warn)}
+.dot.zero{background:var(--danger)}
+.dot.debt{background:var(--debt);box-shadow:0 0 0 2px var(--noshow-bg)}
+
+/* ─────────────  ТОНКИЕ ИНФОРМАЦИОННЫЕ ПОЛОСЫ  ───────────── */
+.slimbar{display:flex;align-items:center;gap:10px;padding:7px 14px;font-size:12px;
+         border-bottom:1px solid var(--line);flex-wrap:wrap}
+.slimbar[hidden]{display:none}
+.slimbar.warn{background:var(--late-bg);color:var(--late)}
+.slimbar.info{background:var(--accent-soft);color:var(--accent-ink)}
+.slimbar button{padding:4px 10px;font-size:11.5px}
+
+/* ─────────────  СЕТКА  ───────────── */
+.gridwrap{flex:1;overflow:auto;position:relative;background:var(--bg)}
+table{border-collapse:separate;border-spacing:0;width:100%}
+th.filler,td.filler{border-right:0;background:var(--bg)}
+tbody tr:nth-child(even) td.day:not(.filled):not(.today){background:var(--surface-2)}
+tbody tr:nth-child(even) td.weekend:not(.filled){background:var(--weekend)}
+tbody tr:nth-child(even) .namecell{background:var(--surface-2)}
+td.wk,th.wk{border-left:1px solid var(--line)}
+th,td{padding:0;border-right:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
+thead th{position:sticky;top:0;z-index:3;background:var(--surface);height:40px;font-weight:600}
+thead th.corner{
+  left:0;z-index:5;text-align:left;padding:0 12px;font-size:11px;color:var(--muted);
+  font-weight:500;border-right:1px solid var(--line);
+}
+tbody tr:hover .namecell{background:var(--accent-soft)}
+tbody tr:hover td.day:not(.filled){background:var(--surface-2)}
+html[data-theme="dark"] tbody tr:hover td.day:not(.filled){background:var(--surface-2)}
+.namecell{
+  position:sticky;left:0;z-index:2;background:var(--surface);width:var(--pane-w);min-width:var(--pane-w);
+  text-align:left;padding:4px 12px;cursor:pointer;border-right:1px solid var(--line);
+}
+.nm{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px;letter-spacing:-.1px}
+.nm .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{display:flex;gap:9px;color:var(--muted);font-size:11px;margin-top:1px;align-items:baseline}
+.sub b{color:var(--ink-2);font-weight:650}
+.sub .bal-warn b{color:var(--warn)}
+.sub .bal-zero b{color:var(--danger)}
+.sub .bal-debt b{color:var(--debt)}
+.daycol{width:var(--col-w);min-width:var(--col-w);text-align:center;line-height:1.15}
+.dnum{font-size:12px;font-weight:600}
+.dwd{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+td.day{height:var(--row-h);text-align:center;cursor:pointer;font-size:13px;user-select:none;position:relative}
+td.day:hover::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 2px var(--accent);border-radius:3px}
+td.day.focus::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 2px var(--accent-ink);border-radius:3px}
+td.weekend,th.weekend{background:var(--weekend)}
+td.today,th.today{background:var(--today)}
+th.today .dnum{color:var(--accent);font-weight:700}
+th.today .dwd{color:var(--accent)}
+td.future{opacity:.55}
+.st-held{background:var(--held-bg);color:var(--held);font-weight:700}
+.st-cancelled_free{background:var(--free-bg);color:var(--free)}
+.st-cancelled_late{background:var(--late-bg);color:var(--late);font-weight:700}
+.st-no_show{background:var(--noshow-bg);color:var(--noshow);font-weight:700}
+.st-rescheduled{background:var(--moved-bg);color:var(--moved);font-weight:700}
+.st-planned{color:var(--muted)}
+.hasnote::before{
+  content:"";position:absolute;top:3px;right:3px;width:0;height:0;
+  border-top:5px solid currentColor;border-left:5px solid transparent;opacity:.55;
+}
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.empty h3{font-size:15px;color:var(--ink);margin:0 0 6px;text-transform:none;letter-spacing:0}
+
+/* ─────────────  ПОДВАЛ  ───────────── */
+.footer{
+  display:flex;gap:16px;align-items:center;padding:8px 14px;background:var(--surface);
+  border-top:1px solid var(--line);font-size:12px;flex-wrap:wrap;
+}
+.footer .k{color:var(--muted)}
+.footer .v{font-weight:650}
+.legend{display:flex;gap:11px;color:var(--muted);font-size:11.5px;align-items:center;flex-wrap:wrap}
+.legend i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;
+          width:17px;height:17px;border-radius:4px;margin-right:4px;font-size:11px;font-weight:700}
+.saved{color:var(--muted);font-size:11.5px;display:flex;align-items:center;gap:5px}
+.saved .pulse{width:6px;height:6px;border-radius:50%;background:var(--held)}
+.saved.saving .pulse{background:var(--warn)}
+
+/* ─────────────  ПЕРЕКЛЮЧАТЕЛЬ ЭКРАНОВ  ───────────── */
+.tabs{display:flex;background:var(--sunken);border-radius:var(--radius-sm);padding:2px;gap:2px}
+.tabs button{background:transparent;border:0;padding:5px 12px;color:var(--ink-2);font-weight:500}
+.tabs button:hover{background:var(--surface)}
+.tabs button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:var(--shadow-1)}
+
+/* ─────────────  ЭКРАНЫ ФИНАНСОВ И АРХИВА  ───────────── */
+.page{padding:18px 20px 40px;max-width:1280px;margin:0 auto}
+.pagehead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.pagehead h2{margin:0}
+.pagehead .dsub{margin:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:11px 13px}
+.tile .k{font-size:11.5px;color:var(--muted)}
+.tile .v{font-size:22px;font-weight:650;letter-spacing:-.5px;margin-top:2px;line-height:1.15}
+.tile .v small{font-size:13px;font-weight:550;color:var(--ink-2);margin-left:2px}
+.tile .v2{font-size:14px;font-weight:600;color:var(--ink-2);margin-top:1px}
+.tile .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+      padding:14px 16px 8px;margin-top:14px}
+.card h3{margin:0 0 2px;font-size:13.5px;font-weight:650;color:var(--ink);
+         text-transform:none;letter-spacing:-.15px}
+.card .csub{font-size:11.5px;color:var(--muted);margin-bottom:6px}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.grid-line{stroke:var(--line-2);stroke-width:1}
+.axis-line{stroke:var(--line);stroke-width:1}
+.tick{fill:var(--muted);font-size:11px}
+.barlabel{fill:var(--ink-2);font-size:11.5px;font-weight:600}
+.bar{transition:opacity .1s}
+.chart:hover .bar{opacity:.55}
+.chart .bar:hover{opacity:1}
+.viztip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);
+        border-radius:var(--radius-sm);box-shadow:var(--shadow-2);padding:7px 10px;font-size:12px;
+        white-space:nowrap;opacity:0;transform:translate(-50%,-115%);transition:opacity .1s;z-index:5}
+.viztip b{display:block;font-size:13px;margin-top:1px}
+table.data{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:2px}
+table.data th{text-align:right;color:var(--muted);font-weight:500;font-size:11px;padding:7px 9px;
+              border-bottom:1px solid var(--line);white-space:nowrap}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data td{text-align:right;padding:8px 9px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+table.data tbody tr:hover td{background:var(--sunken)}
+table.data tfoot td{font-weight:650;border-top:1px solid var(--line);border-bottom:0}
+table.data .nm{font-weight:600;font-size:12.5px}
+table.data .zero{color:var(--muted)}
+.rowlink{cursor:pointer}
+.miniactions{display:flex;gap:6px;justify-content:flex-end}
+.miniactions button{padding:3px 9px;font-size:11.5px}
+
+/* ─────────────  МЕНЮ / ОКНА  ───────────── */
+.menu{
+  position:fixed;z-index:70;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow-2);padding:5px;min-width:236px;
+}
+.menu .mhead{padding:6px 10px 7px;color:var(--muted);font-size:11px;border-bottom:1px solid var(--line-2);margin-bottom:4px}
+.menu div[data-a]{padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;display:flex;gap:10px;align-items:center}
+.menu div[data-a]:hover{background:var(--accent-soft)}
+.menu .msep{height:1px;background:var(--line-2);margin:5px 4px}
+.menu .sym{width:16px;text-align:center;font-weight:700}
+.menu .kbd{margin-left:auto;color:var(--muted);font-size:10.5px;border:1px solid var(--line);
+           border-radius:4px;padding:0 4px;min-width:16px;text-align:center}
+
+.overlay{position:fixed;inset:0;background:rgba(12,16,26,.42);z-index:50;display:flex;
+         backdrop-filter:blur(1.5px);animation:fade .12s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.drawer{margin-left:auto;width:440px;max-width:94vw;background:var(--surface);height:100%;
+        overflow:auto;padding:18px 20px 28px;box-shadow:var(--shadow-2);animation:slide .16s ease-out}
+@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}
+.modal{margin:auto;background:var(--surface);border-radius:14px;padding:20px;width:410px;
+       max-width:94vw;box-shadow:var(--shadow-2);animation:pop .13s ease-out}
+@keyframes pop{from{transform:scale(.97);opacity:.5}to{transform:none;opacity:1}}
+h2{font-size:16px;margin:0 0 4px;letter-spacing:-.2px}
+.dsub{color:var(--muted);font-size:12px;margin-bottom:14px}
+h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:20px 0 9px;font-weight:600}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:11.5px;color:var(--ink-2);margin-bottom:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{background:var(--sunken);border-radius:var(--radius);padding:9px 11px}
+.stat .k{font-size:11px;color:var(--muted)}
+.stat .v{font-size:19px;font-weight:650;letter-spacing:-.4px;margin-top:1px}
+table.mini{width:100%;border-collapse:collapse;font-size:12px}
+table.mini th{text-align:left;color:var(--muted);font-weight:500;font-size:11px;padding:5px 7px;
+              border:0;border-bottom:1px solid var(--line);position:static;background:transparent;height:auto}
+table.mini td{padding:6px 7px;border:0;border-bottom:1px solid var(--line-2);height:auto}
+table.mini tr.done td{color:var(--muted)}
+.badge{font-size:10.5px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--ink-2);white-space:nowrap}
+.badge.full{background:var(--held-bg);border-color:transparent;color:var(--held)}
+.actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;align-items:center}
+.actions .spacer{flex:1}
+.hint{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
+.banner{padding:9px 12px;border-radius:var(--radius);font-size:12px;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+.banner.warn{background:var(--late-bg);color:var(--late)}
+.banner.zero{background:var(--noshow-bg);color:var(--noshow)}
+.banner.debt{background:var(--noshow-bg);color:var(--debt);font-weight:550}
+
+/* ─────────────  ЖУРНАЛ ИЗМЕНЕНИЙ  ───────────── */
+.logday{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+        margin:16px 0 7px;font-weight:600}
+.logrow{display:flex;gap:10px;padding:8px 9px;border-radius:var(--radius-sm);align-items:flex-start}
+.logrow:hover{background:var(--sunken)}
+.logrow .time{color:var(--muted);font-size:11.5px;min-width:38px;padding-top:1px}
+.logrow .body{flex:1;min-width:0}
+.logrow .t{font-size:12.5px}
+.logrow .s{color:var(--muted);font-size:11.5px;margin-top:1px}
+.logrow .kdot{width:6px;height:6px;border-radius:50%;margin-top:6px;flex:none;background:var(--muted)}
+.logrow .kdot.lesson{background:var(--held)}
+.logrow .kdot.package{background:var(--accent)}
+.logrow .kdot.student{background:var(--moved)}
+.logrow .kdot.undo{background:var(--late)}
+.logrow button{opacity:0;font-size:11.5px;padding:3px 8px}
+.logrow:hover button{opacity:1}
+.filterbar{display:flex;gap:7px;align-items:center;margin-bottom:4px}
+.filterbar select{width:auto;flex:1}
+
+/* ─────────────  ТОСТ  ───────────── */
+#toasts{position:fixed;right:18px;bottom:18px;z-index:90;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+       border-radius:var(--radius);padding:10px 13px;box-shadow:var(--shadow-2);font-size:12.5px;
+       display:flex;gap:11px;align-items:center;animation:pop .15s ease-out;max-width:340px}
+.toast.ok{border-left-color:var(--held)}
+.toast.warn{border-left-color:var(--warn)}
+.toast button{padding:3px 9px;font-size:11.5px}
+
+/* ─────────────  ТЕЛЕФОН  ───────────── */
+td.day,button,.chip,.tabs button{touch-action:manipulation}
+td.day{-webkit-touch-callout:none}
+@media (pointer:coarse){
+  :root{--row-h:46px;--col-w:40px}
+  td.day{font-size:15px}
+  .menu div[data-a]{padding:10px 12px}
+  .logrow button{opacity:1}
+}
+@media (max-width:760px){
+  :root{--pane-w:132px}
+  .brand{display:none}
+  header{padding:7px 8px;gap:5px}
+  header button{padding:5px 8px;font-size:12px}
+  .sep{display:none}
+  .month{min-width:100px;font-size:12.5px}
+  .searchwrap input{width:104px}
+  .attention{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .attention .chip{flex:none}
+  .namecell{padding:3px 7px}
+  .nm{font-size:12px}
+  .sub{gap:6px;font-size:10.5px}
+  .footer{gap:10px;font-size:11px;padding:6px 8px}
+  .legend{display:none}
+  .page{padding:12px 10px 32px}
+  .pagehead h2{font-size:15px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr)) !important;max-width:none !important}
+  .card{padding:10px 10px 6px;overflow-x:auto}
+  .drawer{width:100%;max-width:100%}
+  .modal{width:94vw;padding:16px}
+  .slimbar{padding:6px 8px;font-size:11.5px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Журнал репетитора</div>
+  <div class="tabs" id="tabs">
+    <button data-m="grid" class="on">Сетка</button>
+    <button data-m="money">Финансы</button>
+    <button data-m="archive">Ученики</button>
+  </div>
+  <div class="navgroup" id="navgroup">
+    <button id="prev" title="Предыдущий месяц">◀</button>
+    <div class="month" id="monthLabel"></div>
+    <button id="next" title="Следующий месяц">▶</button>
+  </div>
+  <button id="today" class="ghost">Сегодня</button>
+  <div class="searchwrap"><input id="search" placeholder="Поиск ученика"></div>
+  <div class="spacer"></div>
+  <button id="undo" class="icon" title="Отменить — Ctrl/Cmd+Z">↶</button>
+  <button id="redo" class="icon" title="Вернуть — Ctrl/Cmd+Shift+Z">↷</button>
+  <button id="history" class="ghost">История</button>
+  <div class="sep"></div>
+  <button id="addStudent">+ Ученик</button>
+  <button id="addPayment" class="primary">+ Оплата</button>
+  <div class="sep"></div>
+  <button id="more" class="icon ghost" title="Ещё">⋯</button>
+</header>
+
+<div class="attention" id="attention"></div>
+<div id="filebar" class="slimbar info" hidden></div>
+<div id="remind" class="slimbar warn" hidden></div>
+<div class="gridwrap"><div id="gridhost"></div></div>
+<div class="footer" id="footer"></div>
+<div id="toasts"></div>
+
+<script>
+/* ═══════════════════════════  ДОМЕННАЯ МОДЕЛЬ  ═══════════════════════════ */
+
+const STATUS = {
+  held:           {label:'Проведён',        sym:'✓', consumes:1, key:'1'},
+  cancelled_free: {label:'Отменён вовремя', sym:'○', consumes:0, key:'2'},
+  cancelled_late: {label:'Отменён поздно',  sym:'✕', consumes:1, key:'3'},
+  no_show:        {label:'Не пришёл',       sym:'✕', consumes:1, key:'4'},
+  rescheduled:    {label:'Перенесён',       sym:'→', consumes:0, key:'5'},
+  planned:        {label:'Запланирован',    sym:'·', consumes:0, key:'6'},
+};
+const CUR = {RUB:'₽', USD:'$'};
+const WD = ['вс','пн','вт','ср','чт','пт','сб'];
+const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль',
+                'август','сентябрь','октябрь','ноябрь','декабрь'];
+const STORE_KEY = 'tutor-journal-v3';
+const LEGACY_KEYS = ['tutor-journal-v2', 'tutor-journal'];   // данные прототипов подхватываются
+const SNAP_PREFIX = 'tutor-journal-snap-';
+
+let data = null;              // {students, packages, lessons, settings, audit}
+let view = new Date();
+let filter = '';
+let showArchived = false;
+let mode = 'grid';            // grid | money | archive
+let moneyMonths = 12;         // глубина финансового монитора: 6 | 12 | 24 | 0 (всё время)
+let peopleScope = 'archive';  // archive | all — что показывать на экране «Ученики»
+let focusCell = null;         // {sid, date}
+let undoStack = [], redoStack = [];
+
+const iso = d => {
+  const z = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return z.toISOString().slice(0,10);
+};
+const parseISO = s => new Date(s + 'T12:00:00');
+const money = (v,c) => Math.round(v).toLocaleString('ru-RU') + ' ' + CUR[c];
+const fmtDate = s => parseISO(s).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'});
+const fmtTime = ts => new Date(ts).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+const MON3 = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const monKey = s => s.slice(0,7);                               // 'YYYY-MM'
+const monLabel = k => MON3[+k.slice(5,7)-1] + ' ' + k.slice(2,4);
+const hours = n => (Math.round(n*10)/10).toLocaleString('ru-RU');
+const compact = v => Math.abs(v) >= 10000
+  ? (Math.round(v/100)/10).toLocaleString('ru-RU') + ' тыс'
+  : Math.round(v).toLocaleString('ru-RU');
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let seq = Date.now();
+const uid = () => ++seq;
+
+/* ── Баланс: чистая функция от пакетов и занятий, FIFO ── */
+function calc(studentId){
+  const st = data.students.find(s => s.id === studentId);
+  if (!st) return null;
+  const pkgs = data.packages.filter(p => p.studentId === studentId)
+                            .sort((a,b) => a.purchasedOn.localeCompare(b.purchasedOn));
+  const consumed = data.lessons.filter(l => l.studentId === studentId && l.consumes)
+                               .sort((a,b) => a.date.localeCompare(b.date));
+  let rest = consumed.length;
+  const used = pkgs.map(p => {const u = Math.min(rest, Math.max(0, p.lessons)); rest -= u; return u});
+
+  const totalBought = pkgs.reduce((s,p) => s + p.lessons, 0);
+  const totalConsumed = consumed.length;
+  const balance = totalBought - totalConsumed;
+  const current = pkgs[pkgs.length-1] || null;
+  const leftInCurrent = current ? current.lessons - used[used.length-1] : 0;
+  const warnAt = st.warnAt ?? data.settings.warnAt;
+
+  let level = 'ok';
+  if (balance < 0) level = 'debt';
+  else if (balance === 0) level = 'zero';
+  else if (balance <= warnAt) level = 'warn';
+
+  const priceOf = {};
+  let i = 0;
+  pkgs.forEach((p,pi) => {for (let k = 0; k < used[pi]; k++) priceOf[consumed[i++].id] = p.pricePerLesson});
+  while (i < consumed.length) priceOf[consumed[i++].id] = current ? current.pricePerLesson : st.defaultPrice;
+
+  return {student:st, pkgs, used, totalBought, totalConsumed, balance, current, leftInCurrent,
+          level, debt:Math.max(0,-balance), priceOf, lastLesson:consumed[consumed.length-1] || null};
+}
+
+const minutesOf = st => st.lessonMinutes ?? 60;
+
+/* ── Полная метрика по ученику: уроки, часы, деньги, период занятий ── */
+function metrics(studentId){
+  const c = calc(studentId);
+  if (!c) return null;
+  const st = c.student, mins = minutesOf(st);
+  const all = data.lessons.filter(l => l.studentId === studentId);
+  const cnt = s => all.filter(l => l.status === s).length;
+  const held = cnt('held');
+  const dates = all.map(l => l.date).sort();
+  const first = dates[0] || null, last = dates[dates.length-1] || null;
+  const paid = c.pkgs.reduce((s,p) => s + p.lessons * p.pricePerLesson, 0);
+  const earned = all.filter(l => l.consumes).reduce((s,l) => s + (c.priceOf[l.id] ?? st.defaultPrice), 0);
+  const months = first ? Math.max(1,
+    (parseISO(last).getFullYear() - parseISO(first).getFullYear())*12
+    + parseISO(last).getMonth() - parseISO(first).getMonth() + 1) : 0;
+  return {...c, mins, held, hoursHeld:held*mins/60,
+          cancelledFree:cnt('cancelled_free'), cancelledLate:cnt('cancelled_late'), noShow:cnt('no_show'),
+          moved:cnt('rescheduled'), first, last, months, paid, earned,
+          perMonth:months ? held/months : 0};
+}
+
+/* ── Помесячная сводка по всем ученикам: деньги и часы ── */
+function monthlyStats(fromKey){
+  const acc = {};
+  const touch = k => acc[k] = acc[k] || {key:k, lessons:0, hours:0,
+                                          recRUB:0, recUSD:0, earnRUB:0, earnUSD:0};
+  data.students.forEach(s => {
+    const c = calc(s.id), mins = minutesOf(s);
+    c.pkgs.forEach(p => {
+      const k = monKey(p.purchasedOn);
+      if (fromKey && k < fromKey) return;
+      touch(k)['rec' + p.currency] += p.lessons * p.pricePerLesson;
+    });
+    data.lessons.filter(l => l.studentId === s.id).forEach(l => {
+      const k = monKey(l.date);
+      if (fromKey && k < fromKey) return;
+      if (l.consumes){
+        touch(k).lessons++;
+        touch(k)['earn' + s.currency] += c.priceOf[l.id] ?? s.defaultPrice;
+      }
+      if (l.status === 'held') touch(k).hours += mins/60;
+    });
+  });
+  // непрерывный ряд месяцев без дыр
+  const keys = Object.keys(acc).sort();
+  if (!keys.length) return [];
+  const out = [];
+  let [y,m] = keys[0].split('-').map(Number);
+  const [ey,em] = keys[keys.length-1].split('-').map(Number);
+  while (y < ey || (y === ey && m <= em)){
+    const k = `${y}-${String(m).padStart(2,'0')}`;
+    out.push(acc[k] || {key:k, lessons:0, hours:0, recRUB:0, recUSD:0, earnRUB:0, earnUSD:0});
+    if (++m > 12){ m = 1; y++ }
+  }
+  return out;
+}
+function rangeStart(){
+  if (!moneyMonths) return null;
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - moneyMonths + 1);
+  return iso(d).slice(0,7);
+}
+
+/* ═══════════════════════════  ОПЕРАЦИИ, ОТКАТЫ, АУДИТ  ═══════════════════════════
+   Любое изменение данных проходит через apply(). Функция возвращает обратную
+   операцию — на ней держатся и Ctrl+Z, и кнопка «Вернуть» в журнале изменений.
+   Журнал изменений (audit) — только на добавление: откат тоже попадает в историю.
+════════════════════════════════════════════════════════════════════════════════ */
+
+const keyOf = {
+  lesson:  v => v.studentId + '|' + v.date,
+  package: v => String(v.id),
+  student: v => String(v.id),
+};
+function findByKey(kind, key){
+  if (kind === 'lesson'){
+    const [sid, date] = key.split('|');
+    return data.lessons.find(l => l.studentId === +sid && l.date === date) || null;
+  }
+  const list = kind === 'package' ? data.packages : data.students;
+  return list.find(x => String(x.id) === key) || null;
+}
+
+/** Вставляет / заменяет / удаляет запись. Возвращает обратную операцию. */
+function apply(op){                                   // {kind, key, value|null}
+  const {kind, key} = op;
+  const list = kind === 'lesson' ? data.lessons : kind === 'package' ? data.packages : data.students;
+  const prev = findByKey(kind, key);
+  const inverse = {kind, key, value:prev ? JSON.parse(JSON.stringify(prev)) : null};
+  const idx = prev ? list.indexOf(prev) : -1;
+  if (op.value === null){ if (idx >= 0) list.splice(idx, 1); }
+  else if (idx >= 0) list[idx] = op.value;
+  else list.push(op.value);
+  return inverse;
+}
+
+/** Выполняет операцию, пишет её в журнал и в стек отмены. */
+function commit(op, entry){
+  const inverse = apply(op);
+  undoStack.push({op:inverse, entry});
+  if (undoStack.length > 100) undoStack.shift();
+  redoStack.length = 0;
+  logAudit({...entry, inverse});
+  persist();
+  render();
+}
+function logAudit(e){
+  data.audit.unshift({id:uid(), ts:Date.now(), kind:e.kind || 'lesson', studentId:e.studentId ?? null,
+                      title:e.title, sub:e.sub || '', inverse:e.inverse || null});
+  if (data.audit.length > 500) data.audit.length = 500;
+}
+function undo(){
+  const last = undoStack.pop();
+  if (!last){ toast('Отменять нечего'); return }
+  const back = apply(last.op);
+  redoStack.push({op:back, entry:last.entry});
+  logAudit({kind:'undo', studentId:last.entry.studentId, inverse:back,
+            title:'Отменено: ' + last.entry.title, sub:last.entry.sub});
+  persist(); render();
+  toast('Действие отменено', 'ok');
+}
+function redo(){
+  const last = redoStack.pop();
+  if (!last){ toast('Возвращать нечего'); return }
+  const back = apply(last.op);
+  undoStack.push({op:back, entry:last.entry});
+  logAudit({kind:'undo', studentId:last.entry.studentId, inverse:back,
+            title:'Повторено: ' + last.entry.title, sub:last.entry.sub});
+  persist(); render();
+}
+/** Откат одного изменения из журнала (не обязательно последнего). */
+function revertEntry(entryId){
+  const e = data.audit.find(a => a.id === entryId);
+  if (!e || !e.inverse) return;
+  const back = apply(e.inverse);
+  undoStack.push({op:back, entry:{title:e.title, sub:e.sub, studentId:e.studentId}});
+  logAudit({kind:'undo', studentId:e.studentId, title:'Откат: ' + e.title, inverse:back,
+            sub:'из журнала изменений от ' + fmtTime(e.ts)});
+  persist(); render();
+  toast('Изменение отменено', 'ok');
+}
+
+/* ═══════════════  ХРАНЕНИЕ: АВТОСОХРАНЕНИЕ, СНИМКИ, ФАЙЛ ДАННЫХ  ═══════════════
+   Три уровня надёжности:
+   1. Хранилище браузера — мгновенное автосохранение при каждом изменении.
+   2. Снимки — автокопия при первом запуске за день и перед рискованными
+      действиями; хранятся последние 6, восстанавливаются из меню.
+   3. Файл данных (по желанию, Chrome/Edge) — журнал пишет JSON прямо на диск,
+      данные переживают даже очистку истории браузера.
+═══════════════════════════════════════════════════════════════════════════════ */
+
+let saveTimer = null, lastSavedAt = null, saveState = 'idle', loadedFrom = null;
+
+function doWrite(){
+  saveTimer = null;
+  try{
+    data.savedAt = Date.now();
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    lastSavedAt = Date.now(); saveState = 'idle';
+  }catch(err){ saveState = 'error' }
+  writeFile();                                   // в файл данных, если подключён
+  renderFooter();
+}
+function persist(){
+  if (!data) return;
+  saveState = 'saving'; renderFooter();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doWrite, 120);
+}
+function flushNow(){ if (saveTimer){ clearTimeout(saveTimer); doWrite() } }
+window.addEventListener('beforeunload', flushNow);
+document.addEventListener('visibilitychange', () => {if (document.hidden) flushNow()});
+
+function tryParse(raw){
+  try{ const d = JSON.parse(raw); if (d && Array.isArray(d.students)) return d }catch(e){}
+  return null;
+}
+function loadStore(){
+  const main = tryParse(localStorage.getItem(STORE_KEY));
+  if (main){ loadedFrom = 'store'; return main }
+  for (const k of LEGACY_KEYS){
+    const d = tryParse(localStorage.getItem(k));
+    if (d){ loadedFrom = 'legacy'; return d }
+  }
+  for (const s of snapshots()){                  // главное хранилище испорчено — чиним сами
+    const d = tryParse(localStorage.getItem(s.key));
+    if (d){ loadedFrom = 'snapshot'; return d }
+  }
+  loadedFrom = null;
+  return null;
+}
+
+/** Приводит любые загруженные данные к текущей схеме. */
+function normalize(d){
+  d.students = Array.isArray(d.students) ? d.students : [];
+  d.packages = Array.isArray(d.packages) ? d.packages : [];
+  d.lessons  = Array.isArray(d.lessons)  ? d.lessons  : [];
+  d.audit    = Array.isArray(d.audit)    ? d.audit    : [];
+  d.settings = d.settings || {};
+  if (d.settings.warnAt == null) d.settings.warnAt = 1;
+  if (!d.settings.theme)
+    d.settings.theme = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)
+      ? 'dark' : 'light';
+  d.students.forEach(s => {if (s.lessonMinutes == null) s.lessonMinutes = 60});
+  let mx = 0;                                    // чтобы новые id не столкнулись с импортированными
+  for (const arr of [d.students, d.packages, d.lessons, d.audit])
+    for (const x of arr) if (x && typeof x.id === 'number' && x.id > mx) mx = x.id;
+  if (mx > seq) seq = mx;
+  return d;
+}
+function emptyData(){
+  return normalize({students:[], packages:[], lessons:[], audit:[], settings:{warnAt:1}});
+}
+
+/* ── Снимки ── */
+function snapshots(){
+  return Object.keys(localStorage).filter(k => k.startsWith(SNAP_PREFIX)).sort().reverse()
+    .map(key => {
+      const m = key.slice(SNAP_PREFIX.length);             // YYYY-MM-DD-тег
+      const d = tryParse(localStorage.getItem(key)) || {students:[], lessons:[]};
+      return {key, date:m.slice(0,10), tag:m.slice(11),
+              students:d.students.length, lessons:(d.lessons || []).length};
+    });
+}
+function writeSnapshot(tag, overwrite){
+  try{
+    const key = SNAP_PREFIX + iso(new Date()) + '-' + tag;
+    if (!overwrite && localStorage.getItem(key)) return;
+    localStorage.setItem(key, JSON.stringify(data));
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(SNAP_PREFIX)).sort();
+    while (keys.length > 6) localStorage.removeItem(keys.shift());
+  }catch(e){}
+}
+function restoreSnapshot(key){
+  const d = tryParse(localStorage.getItem(key));
+  if (!d){ toast('Снимок повреждён', 'warn'); return }
+  writeSnapshot('before-restore', true);
+  data = normalize(d); undoStack = []; redoStack = [];
+  logAudit({kind:'system', title:'Данные восстановлены из снимка',
+            sub:'снимок от ' + fmtDate(key.slice(SNAP_PREFIX.length, SNAP_PREFIX.length + 10))});
+  persist(); render();
+  toast('Данные восстановлены', 'ok');
+}
+
+/* ── Файл данных (File System Access — Chrome и Edge) ── */
+const idb = {
+  open(){ return new Promise(res => {
+    try{
+      const r = indexedDB.open('tutor-journal-fs', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => res(null);
+    }catch(e){ res(null) }
+  })},
+  async get(k){ const db = await this.open(); if (!db) return null;
+    return new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k);
+      q.onsuccess = () => res(q.result || null); q.onerror = () => res(null) }) },
+  async set(k, v){ const db = await this.open(); if (!db) return;
+    return new Promise(res => { const q = db.transaction('kv','readwrite').objectStore('kv').put(v, k);
+      q.onsuccess = res; q.onerror = res }) },
+  async del(k){ const db = await this.open(); if (!db) return;
+    return new Promise(res => { const q = db.transaction('kv','readwrite').objectStore('kv').delete(k);
+      q.onsuccess = res; q.onerror = res }) },
+};
+const fsSupported = 'showSaveFilePicker' in window;
+let fileHandle = null, fileState = 'off';        // off | prompt | on | error
+let fileWriting = false;
+
+async function writeFile(){
+  if (fileState !== 'on' || !fileHandle || fileWriting) return;
+  fileWriting = true;
+  const stamp = data.savedAt;
+  try{
+    const w = await fileHandle.createWritable();
+    await w.write(JSON.stringify(data, null, 1));
+    await w.close();
+  }catch(e){ fileState = 'error' }
+  fileWriting = false;
+  renderFooter();
+  if (fileState === 'on' && data.savedAt !== stamp) writeFile();  // догоняем пропущенное
+}
+async function bindFile(){
+  if (!fsSupported) return;
+  try{
+    const h = await showSaveFilePicker({
+      suggestedName:'журнал-данные.json',
+      types:[{description:'Данные журнала', accept:{'application/json':['.json']}}],
+    });
+    fileHandle = h; fileState = 'on';
+    await idb.set('handle', h);
+    logAudit({kind:'system', title:'Данные подключены к файлу', sub:h.name});
+    doWrite(); render();
+    toast('Теперь данные сохраняются в файл ' + h.name, 'ok');
+  }catch(e){ /* пользователь закрыл окно выбора */ }
+}
+async function unbindFile(){
+  await idb.del('handle');
+  fileHandle = null; fileState = 'off';
+  render();
+  toast('Файл отключён — данные сохраняются в браузере');
+}
+async function initFile(){
+  if (!fsSupported) return;
+  const h = await idb.get('handle');
+  if (!h) return;
+  fileHandle = h;
+  try{
+    const p = await h.queryPermission({mode:'readwrite'});
+    if (p === 'granted') await adoptFile();
+    else { fileState = 'prompt'; renderFileBar() }
+  }catch(e){ fileState = 'error'; renderFooter() }
+}
+async function connectFile(){                    // клик в баннере — жест пользователя
+  try{
+    const p = await fileHandle.requestPermission({mode:'readwrite'});
+    if (p === 'granted') await adoptFile(); else fileState = 'error';
+  }catch(e){ fileState = 'error' }
+  render();
+}
+async function adoptFile(){
+  try{
+    const f = await fileHandle.getFile();
+    const txt = await f.text();
+    const d = txt.trim() ? tryParse(txt) : null;
+    if (d && (d.savedAt || 0) > (data.savedAt || 0)){   // новее — берём файл
+      data = normalize(d); undoStack = []; redoStack = [];
+      toast('Загружена свежая версия из файла данных', 'ok');
+    }
+    fileState = 'on';
+    doWrite(); render();
+  }catch(e){ fileState = 'error'; render() }
+}
+
+/* ── Одна активная вкладка ── */
+const TAB_KEY = 'tutor-journal-tab';
+const TAB_ID = Math.random().toString(36).slice(2);
+function claimTab(){ try{ localStorage.setItem(TAB_KEY, TAB_ID) }catch(e){} }
+window.addEventListener('storage', e => {
+  if (e.key === TAB_KEY && e.newValue && e.newValue !== TAB_ID) showTakeover();
+});
+function showTakeover(){
+  if (document.getElementById('takeover')) return;
+  const o = document.createElement('div');
+  o.className = 'overlay'; o.id = 'takeover';
+  o.innerHTML = `<div class="modal"><h2>Журнал открыт в другой вкладке</h2>
+    <div class="dsub">Работать можно только в одной вкладке — иначе изменения будут
+      перезаписывать друг друга. Эта вкладка приостановлена.</div>
+    <div class="actions"><button class="primary" id="tk">Работать в этой вкладке</button></div></div>`;
+  document.body.appendChild(o);
+  o.querySelector('#tk').onclick = () => {
+    claimTab();
+    const d = loadStore();
+    if (d){ data = normalize(d); undoStack = []; redoStack = [] }
+    o.remove(); render();
+  };
+}
+
+/* ── Первый запуск ── */
+function showWelcome(){
+  const o = document.createElement('div');
+  o.className = 'overlay'; o.id = 'welcome';
+  o.innerHTML = `<div class="modal" style="width:460px">
+    <h2>Журнал репетитора</h2>
+    <div class="dsub">Учёт занятий, пакетов уроков и оплат — всё на одном экране.
+      Данные сохраняются автоматически на этом компьютере и никуда не отправляются.</div>
+    <div class="actions" style="justify-content:flex-start;margin-top:6px">
+      <button class="primary" id="w-clean">Начать с чистого журнала</button>
+      <button id="w-demo">Посмотреть с примером</button>
+    </div>
+    <div class="hint">Пример — 10 вымышленных учеников с историей почти за год: можно всё
+      попробовать, а потом очистить через меню ⋯ → «Начать заново».</div></div>`;
+  document.body.appendChild(o);
+  o.querySelector('#w-clean').onclick = () => {o.remove(); startClean()};
+  o.querySelector('#w-demo').onclick = () => {o.remove(); startDemo()};
+}
+function startClean(){
+  data = emptyData();
+  logAudit({kind:'system', title:'Журнал создан', sub:'чистый старт'});
+  data.settings.lastExportAt = Date.now();
+  document.documentElement.dataset.theme = data.settings.theme;
+  writeSnapshot('boot', true);
+  persist(); render();
+}
+function startDemo(){
+  data = seed();
+  data.settings.lastExportAt = Date.now();
+  document.documentElement.dataset.theme = data.settings.theme || 'light';
+  writeSnapshot('boot', true);
+  persist(); render();
+}
+
+/* ═══════════════════════════  ТЕСТОВЫЕ ДАННЫЕ  ═══════════════════════════ */
+
+function seed(){
+  const today = new Date();
+  const S = [
+    {name:'Миша Орлов',    currency:'RUB', price:1500, pkg:8,  days:[2,4], bal:0,  weeks:40, min:60},
+    {name:'Аня Северова',  currency:'USD', price:25,   pkg:10, days:[1,3], bal:1,  weeks:34, min:60},
+    {name:'Пётр Дубов',    currency:'RUB', price:2000, pkg:8,  days:[2,5], bal:-2, weeks:44, min:90},
+    {name:'Катя Лунина',   currency:'RUB', price:1800, pkg:10, days:[1,4], bal:7,  weeks:30, min:60},
+    {name:'Даня Ким',      currency:'USD', price:30,   pkg:8,  days:[1,3], bal:4,  weeks:36, min:90},
+    {name:'Лиза Ворон',    currency:'RUB', price:1600, pkg:8,  days:[2,5], bal:3,  weeks:26, min:60},
+    {name:'Тимур Ясин',    currency:'USD', price:28,   pkg:10, days:[2,4], bal:9,  weeks:46, min:60},
+    {name:'Оля Гринь',     currency:'RUB', price:1400, pkg:8,  days:[1,3], bal:1,  weeks:38, min:45},
+    // закончили заниматься — попадают в архив
+    {name:'Игорь Соловьёв',currency:'RUB', price:1300, pkg:8,  days:[3],   bal:0,  weeks:30, min:60, end:14, arch:1},
+    {name:'Мария Лант',    currency:'USD', price:22,   pkg:10, days:[2,4], bal:2,  weeks:20, min:60, end:22, arch:1},
+  ];
+  const students = [], packages = [], lessons = [], audit = [];
+  const born = Date.now() - 86400000;
+
+  S.forEach((s,idx) => {
+    const st = {id:uid(), name:s.name, contact:'', currency:s.currency, defaultPrice:s.price,
+                defaultPackage:s.pkg, lessonMinutes:s.min, warnAt:null, notes:'',
+                archived:s.arch || 0, order:idx, createdAt:born};
+    students.push(st);
+
+    const end = (s.end || 0) * 7;
+    const dates = [];
+    for (let back = s.weeks*7 + end; back >= end; back--){
+      const d = new Date(today); d.setDate(d.getDate() - back);
+      if (s.days.includes(d.getDay())) dates.push(iso(d));
+    }
+    const nPkg = Math.max(1, Math.floor((dates.length + s.bal) / s.pkg));
+    const totalBought = nPkg * s.pkg;
+    const need = Math.min(dates.length, Math.max(0, totalBought - s.bal));
+    const lateCancel = idx % 3 === 0 ? 1 : 0;
+    const held = dates.slice(Math.max(0, dates.length - need + lateCancel));
+
+    held.forEach(dt => lessons.push({id:uid(), studentId:st.id, date:dt, status:'held',
+                                     consumes:1, movedTo:null, note:'', updatedAt:born}));
+    for (let p = 0; p < nPkg; p++){
+      const anchor = held[Math.min(held.length-1, p*s.pkg)] || iso(today);
+      const d = parseISO(anchor); d.setDate(d.getDate() - 2);
+      packages.push({id:uid(), studentId:st.id, purchasedOn:iso(d), lessons:s.pkg,
+                     pricePerLesson:s.price, currency:s.currency,
+                     comment:p === 0 ? 'первый пакет' : '', createdAt:born});
+    }
+    const taken = new Set(held);
+    const shift = (base, n) => {const d = parseISO(base); d.setDate(d.getDate() + n); return iso(d)};
+    const anchor = held[Math.max(0, held.length - 3 - idx)];
+    const freeNear = () => {
+      if (!anchor) return null;
+      for (let k = 1; k <= 25; k++){
+        const d = shift(anchor, -k), wd = parseISO(d).getDay();
+        if (!taken.has(d) && wd !== 0 && wd !== 6 && parseISO(d) <= today) return d;
+      }
+      return null;
+    };
+    const put = (date, status, note) => {
+      if (!date) return;
+      taken.add(date);
+      lessons.push({id:uid(), studentId:st.id, date, status,
+                    consumes:STATUS[status].consumes, movedTo:null, note, updatedAt:born});
+    };
+    put(freeNear(), 'cancelled_free', 'заболел, предупредил заранее');
+    if (idx % 2 === 0) put(freeNear(), 'rescheduled', 'перенесли на другой день');
+    if (lateCancel)    put(freeNear(), 'cancelled_late', 'отменил утром');
+  });
+
+  // правдоподобная история правок за последние дни — чтобы журнал не был пустым
+  const nameById = id => (students.find(s => s.id === id) || {}).name;
+  const evening = d => parseISO(d).getTime() - 12*3600e3 + 19.5*3600e3;
+  lessons.slice().sort((a,b) => b.date.localeCompare(a.date)).slice(0, 12).forEach((l,i) => {
+    audit.push({id:uid(), ts:evening(l.date) + i*137000, kind:'lesson', studentId:l.studentId,
+      title:`${nameById(l.studentId)} — ${STATUS[l.status].label.toLowerCase()}`,
+      sub:fmtDate(l.date) + (l.note ? ' · ' + l.note : ''),
+      inverse:{kind:'lesson', key:l.studentId + '|' + l.date, value:null}});
+  });
+  packages.slice().sort((a,b) => b.purchasedOn.localeCompare(a.purchasedOn)).slice(0, 4).forEach((p,i) => {
+    audit.push({id:uid(), ts:evening(p.purchasedOn) + i*211000, kind:'package', studentId:p.studentId,
+      title:`Оплата: ${nameById(p.studentId)} — ${p.lessons} уроков`,
+      sub:`${money(p.lessons * p.pricePerLesson, p.currency)} · ${fmtDate(p.purchasedOn)}`,
+      inverse:{kind:'package', key:String(p.id), value:null}});
+  });
+  audit.push({id:uid(), ts:born, kind:'system', studentId:null,
+              title:'Создан журнал с тестовыми данными',
+              sub:students.length + ' учеников, ' + lessons.length + ' занятий', inverse:null});
+  audit.sort((a,b) => b.ts - a.ts);
+
+  return {students, packages, lessons, settings:{warnAt:1, theme:'light'}, audit};
+}
+
+/* ═══════════════════════════  ОТРИСОВКА  ═══════════════════════════ */
+
+function visibleStudents(){
+  return data.students
+    .filter(s => showArchived ? true : !s.archived)
+    .filter(s => s.name.toLowerCase().includes(filter.toLowerCase().trim()))
+    .sort((a,b) => a.order - b.order);
+}
+function daysOfMonth(){
+  const y = view.getFullYear(), m = view.getMonth();
+  return Array.from({length:new Date(y, m+1, 0).getDate()}, (_,i) => new Date(y, m, i+1));
+}
+function render(){
+  document.getElementById('monthLabel').textContent = MONTHS[view.getMonth()] + ' ' + view.getFullYear();
+  document.getElementById('undo').disabled = !undoStack.length;
+  document.getElementById('redo').disabled = !redoStack.length;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+
+  const isGrid = mode === 'grid';
+  document.getElementById('navgroup').style.display = isGrid ? '' : 'none';
+  document.getElementById('today').style.display = isGrid ? '' : 'none';
+  document.querySelector('.searchwrap').style.display = mode === 'money' ? 'none' : '';
+  document.getElementById('attention').style.display = isGrid ? '' : 'none';
+
+  if (isGrid) renderGrid();
+  else{
+    scrolledKey = '';                            // вернёмся на сетку — снова прокрутим к сегодня
+    document.getElementById('gridhost').innerHTML = mode === 'money' ? renderMoney() : renderPeople();
+  }
+
+  renderAttention(); renderFooter(); renderRemind(); renderFileBar();
+  if (mode === 'money') bindVizTips();
+}
+
+/* Напоминание о резервной копии — когда данных уже жалко, а копии давно не было */
+function renderRemind(){
+  const el = document.getElementById('remind');
+  const s = data.settings, now = Date.now();
+  const due = mode === 'grid' && data.lessons.length >= 20
+    && now > (s.exportSnoozeUntil || 0)
+    && (!s.lastExportAt || now - s.lastExportAt > 14 * 86400e3);
+  if (!due){ el.hidden = true; return }
+  el.hidden = false;
+  el.innerHTML = `<span>Резервная копия не сохранялась ${s.lastExportAt
+      ? 'с ' + fmtDate(iso(new Date(s.lastExportAt))) : 'ни разу'} —
+      сохраните файл с данными в надёжное место.</span>
+    <button data-save class="primary">Сохранить копию</button>
+    <button data-later>Напомнить позже</button>`;
+}
+function renderFileBar(){
+  const el = document.getElementById('filebar');
+  if (fileState !== 'prompt'){ el.hidden = true; return }
+  el.hidden = false;
+  el.innerHTML = `<span>Данные журнала хранятся в файле${fileHandle ? ' «' + esc(fileHandle.name) + '»' : ''} —
+      разрешите доступ, чтобы продолжить работать с ним.</span>
+    <button data-connect class="primary">Подключить файл</button>
+    <button data-skip>Работать без файла</button>`;
+}
+
+/* Всплывающая подсказка над столбцами графика */
+function bindVizTips(){
+  document.querySelectorAll('.chart').forEach(ch => {
+    const tip = ch.querySelector('.viztip');
+    const show = e => {
+      const b = e.target.closest('.bar');
+      if (!b){ tip.style.opacity = 0; return }
+      const r = ch.getBoundingClientRect(), br = b.getBoundingClientRect();
+      tip.innerHTML = `${esc(b.dataset.tip)}<b>${esc(b.dataset.val)}</b>`;
+      tip.style.left = (br.left + br.width/2 - r.left) + 'px';
+      tip.style.top = (br.top - r.top) + 'px';
+      tip.style.opacity = 1;
+    };
+    ch.addEventListener('mousemove', show);
+    ch.addEventListener('click', show);          // на телефоне — по касанию
+    ch.addEventListener('mouseleave', () => tip.style.opacity = 0);
+  });
+}
+
+function renderGrid(){
+  const students = visibleStudents();
+  const host = document.getElementById('gridhost');
+  if (!students.length){
+    host.innerHTML = `<div class="empty"><h3>${data.students.length ? 'Никто не найден' : 'Пока нет учеников'}</h3>
+      <div>${data.students.length ? 'Измените поиск' : 'Нажмите «+ Ученик», чтобы добавить первого'}</div></div>`;
+    return;
+  }
+  const days = daysOfMonth(), todayIso = iso(new Date());
+  const byCell = {};
+  data.lessons.forEach(l => byCell[l.studentId + '|' + l.date] = l);
+
+  let h = '<table><thead><tr><th class="corner namecell">Ученик · остаток · цена</th>';
+  days.forEach(d => {
+    const w = d.getDay() === 0 || d.getDay() === 6, k = iso(d);
+    h += `<th class="daycol${k === todayIso ? ' today' : ''}${w ? ' weekend' : ''}${d.getDay() === 1 ? ' wk' : ''}">
+            <div class="dnum">${d.getDate()}</div><div class="dwd">${WD[d.getDay()]}</div></th>`;
+  });
+  h += '<th class="filler"></th></tr></thead><tbody>';
+
+  students.forEach(s => {
+    const c = calc(s.id);
+    const dot = c.level === 'ok' ? '' : `<span class="dot ${c.level}"></span>`;
+    const left = c.balance < 0
+      ? `<span class="bal-debt"><b>−${c.debt}</b> в долг</span>`
+      : `<span class="bal-${c.level}"><b>${c.leftInCurrent}</b> из ${c.current ? c.current.lessons : 0}</span>`;
+    const arch = s.archived ? ' <span class="badge">архив</span>' : '';
+    h += `<tr><td class="namecell" data-student="${s.id}" title="Открыть карточку">
+            <div class="nm">${dot}<span class="name">${esc(s.name)}</span>${arch}</div>
+            <div class="sub">${left}<span>${money(s.defaultPrice, s.currency)}</span></div>
+          </td>`;
+    days.forEach(d => {
+      const k = iso(d), l = byCell[s.id + '|' + k];
+      const w = d.getDay() === 0 || d.getDay() === 6;
+      const cls = ['day', l ? 'filled st-' + l.status : '', w ? 'weekend' : '',
+                   d.getDay() === 1 ? 'wk' : '',
+                   k === todayIso ? 'today' : '', k > todayIso ? 'future' : '',
+                   l && l.note ? 'hasnote' : '',
+                   focusCell && focusCell.sid === s.id && focusCell.date === k ? 'focus' : ''].join(' ');
+      const t = l ? `${STATUS[l.status].label} · ${l.consumes ? 'урок списан' : 'не списывается'}`
+                    + (l.note ? ' · ' + l.note : '')
+                    + (l.updatedAt ? ` · изменено ${fmtDate(iso(new Date(l.updatedAt)))} ${fmtTime(l.updatedAt)}` : '')
+                  : `${esc(s.name)} · ${fmtDate(k)}`;
+      h += `<td class="${cls}" data-s="${s.id}" data-d="${k}" title="${esc(t)}">${l ? STATUS[l.status].sym : ''}</td>`;
+    });
+    h += '<td class="filler"></td></tr>';
+  });
+  host.innerHTML = h + '</tbody></table>';
+  requestAnimationFrame(scrollToToday);
+}
+
+/* Один раз на каждый показанный месяц прокручиваем сетку к сегодняшнему дню */
+let scrolledKey = '';
+function scrollToToday(){
+  const key = mode + ':' + view.getFullYear() + '-' + view.getMonth();
+  if (scrolledKey === key) return;
+  scrolledKey = key;
+  const th = document.querySelector('.gridwrap th.today');
+  if (!th) return;
+  const wrap = document.querySelector('.gridwrap');
+  wrap.scrollLeft = Math.max(0, th.offsetLeft - (innerWidth < 760 ? 170 : 420));
+}
+
+function renderAttention(){
+  if (mode !== 'grid') return;
+  const items = data.students.filter(s => !s.archived).map(s => calc(s.id))
+                    .filter(c => c.level !== 'ok').sort((a,b) => a.balance - b.balance);
+  const el = document.getElementById('attention');
+  el.innerHTML = !items.length
+    ? '<span class="lbl">Все пакеты в порядке — напоминать никому не нужно</span>'
+    : '<span class="lbl">Требуют внимания:</span>' + items.map(c =>
+        `<span class="chip" data-student="${c.student.id}" title="Открыть карточку">
+           <span class="dot ${c.level}"></span>${esc(c.student.name)}
+           <b>${c.balance < 0 ? '−' + c.debt : c.balance}</b></span>`).join('');
+}
+
+function saveLabel(){
+  const medium = fileState === 'on' ? ' · в файл'
+               : fileState === 'error' ? ' · файл недоступен' : '';
+  return (saveState === 'saving' ? 'Сохранение…'
+        : saveState === 'error' ? 'Не удалось сохранить!'
+        : lastSavedAt ? 'Сохранено ' + fmtTime(lastSavedAt) : 'Автосохранение включено') + medium;
+}
+function renderFooter(){
+  if (!data) return;
+  const sv0 = saveLabel();
+  if (mode !== 'grid'){
+    document.getElementById('footer').innerHTML =
+      `<span class="k">${mode === 'money'
+        ? 'Суммы по валютам не складываются и не конвертируются'
+        : 'История архивных учеников сохраняется полностью'}</span>
+       <span class="spacer" style="flex:1"></span>
+       <span class="saved${saveState === 'saving' ? ' saving' : ''}"><span class="pulse"></span>${sv0}</span>`;
+    return;
+  }
+  const y = view.getFullYear(), m = view.getMonth();
+  const inMonth = s => {const d = parseISO(s); return d.getFullYear() === y && d.getMonth() === m};
+  const rec = {RUB:0, USD:0}, earn = {RUB:0, USD:0}, owe = {RUB:0, USD:0};
+  let held = 0;
+  data.students.forEach(s => {
+    const c = calc(s.id);
+    c.pkgs.forEach((p,i) => {
+      if (inMonth(p.purchasedOn)) rec[p.currency] += p.lessons * p.pricePerLesson;
+      owe[p.currency] += (p.lessons - c.used[i]) * p.pricePerLesson;
+    });
+    data.lessons.filter(l => l.studentId === s.id && l.consumes && inMonth(l.date))
+      .forEach(l => {earn[s.currency] += c.priceOf[l.id] || s.defaultPrice; held++});
+  });
+  const pair = o => `${money(o.RUB,'RUB')} · ${money(o.USD,'USD')}`;
+  const sv = saveLabel();
+
+  document.getElementById('footer').innerHTML = `
+    <span><span class="k">Уроков за месяц:</span> <span class="v">${held}</span></span>
+    <span><span class="k">Получено:</span> <span class="v">${pair(rec)}</span></span>
+    <span><span class="k">Отработано:</span> <span class="v">${pair(earn)}</span></span>
+    <span title="Оплачено, но ещё не проведено"><span class="k">Обязательства:</span> <span class="v">${pair(owe)}</span></span>
+    <span class="spacer" style="flex:1"></span>
+    <span class="legend">
+      <span><i class="st-held">✓</i>проведён</span>
+      <span><i class="st-cancelled_free">○</i>отменён вовремя</span>
+      <span><i class="st-cancelled_late">✕</i>списан</span>
+      <span><i class="st-rescheduled">→</i>перенос</span>
+    </span>
+    <span class="saved${saveState === 'saving' ? ' saving' : ''}"><span class="pulse"></span>${sv}</span>`;
+}
+
+/* ═══════════════════════════  ЭКРАН «ФИНАНСЫ»  ═══════════════════════════
+   Палитра графиков — проверенный набор: слот 1 синий (₽), слот 2 оранжевый ($),
+   слот 3 бирюзовый (часы). Каждый график — один ряд, поэтому легенда не нужна:
+   заголовок называет, что нарисовано. Под графиками таблица с теми же числами.
+══════════════════════════════════════════════════════════════════════════ */
+
+const SERIES = {
+  light:{money:'#2a78d6', usd:'#eb6834', hours:'#1baf7a'},
+  dark: {money:'#3987e5', usd:'#d95926', hours:'#199e70'},
+};
+const seriesColor = k => SERIES[document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'][k];
+
+/** Столбчатая диаграмма: один ряд, подпись только у последнего и наибольшего столбца. */
+function barChart(rows, valueKey, colorKey, fmtVal){
+  const W = 1000, H = 190, L = 74, R = 14, T = 14, B = 36;
+  const pw = W - L - R, ph = H - T - B;
+  const color = seriesColor(colorKey);
+  const vals = rows.map(r => r[valueKey]);
+  const max = Math.max(1, ...vals);
+  // «круглый» максимум по шкале 1-2-5
+  const pow = Math.pow(10, Math.floor(Math.log10(max)));
+  const niceMax = [1,2,2.5,5,10].map(m => m*pow).find(v => v >= max) || 10*pow;
+  const y = v => T + ph - (v / niceMax) * ph;
+  const band = pw / rows.length;
+  const bw = Math.min(24, band * 0.58);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Столбчатая диаграмма по месяцам">`;
+  for (let i = 0; i <= 4; i++){
+    const v = niceMax * i / 4, yy = y(v);
+    svg += `<line class="grid-line" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/>`
+         + `<text class="tick" x="${L-9}" y="${yy+4}" text-anchor="end">${compact(v)}</text>`;
+  }
+  svg += `<line class="axis-line" x1="${L}" y1="${T+ph}" x2="${W-R}" y2="${T+ph}"/>`;
+
+  const maxIdx = vals.indexOf(Math.max(...vals));
+  rows.forEach((r,i) => {
+    const v = r[valueKey];
+    const x = L + band*i + (band - bw)/2;
+    const h = Math.max(0, T + ph - y(v));
+    const rr = Math.min(4, h);
+    if (h > 0){
+      // столбец: скруглённый верх (край данных), прямое основание
+      svg += `<path class="bar" fill="${color}" data-tip="${esc(monLabel(r.key))}" data-val="${esc(fmtVal(v))}"
+        d="M${x} ${T+ph} L${x} ${y(v)+rr} Q${x} ${y(v)} ${x+rr} ${y(v)} L${x+bw-rr} ${y(v)}
+           Q${x+bw} ${y(v)} ${x+bw} ${y(v)+rr} L${x+bw} ${T+ph} Z"/>`;
+    }
+    if ((i === rows.length-1 || i === maxIdx) && v > 0)
+      svg += `<text class="barlabel" x="${x+bw/2}" y="${y(v)-6}" text-anchor="middle">${esc(fmtVal(v))}</text>`;
+    const step = rows.length > 14 ? 2 : 1;
+    if (i % step === 0 || i === rows.length-1)
+      svg += `<text class="tick" x="${L+band*i+band/2}" y="${H-14}" text-anchor="middle">${monLabel(r.key)}</text>`;
+  });
+  return svg + '</svg>';
+}
+function chartCard(title, sub, rows, valueKey, colorKey, fmtVal){
+  if (!rows.some(r => r[valueKey] > 0)) return '';
+  return `<div class="card"><h3>${esc(title)}</h3><div class="csub">${esc(sub)}</div>
+    <div class="chart">${barChart(rows, valueKey, colorKey, fmtVal)}<div class="viztip"></div></div></div>`;
+}
+
+function renderMoney(){
+  const from = rangeStart();
+  const all = monthlyStats(null);
+  const rows = from ? all.filter(r => r.key >= from) : all;
+  const sum = k => rows.reduce((s,r) => s + r[k], 0);
+  const nMon = Math.max(1, rows.length);
+  const active = data.students.filter(s => !s.archived).length;
+
+  // обязательства — на сегодня, а не за период
+  const owe = {RUB:0, USD:0};
+  data.students.forEach(s => {
+    const c = calc(s.id);
+    c.pkgs.forEach((p,i) => owe[p.currency] += (p.lessons - c.used[i]) * p.pricePerLesson);
+  });
+
+  const H = sum('hours');
+  const rateR = H ? sum('earnRUB') / H : 0, rateU = H ? sum('earnUSD') / H : 0;
+  const btn = (v,l) => `<button data-range="${v}" class="${moneyMonths === v ? 'primary' : ''}">${l}</button>`;
+
+  const table = `<div class="card"><h3>По месяцам</h3>
+    <div class="csub">Те же числа, что на графиках — для сверки и переноса в отчётность</div>
+    <table class="data"><thead><tr>
+      <th>Месяц</th><th>Уроков</th><th>Часов</th>
+      <th>Получено ₽</th><th>Получено $</th><th>Отработано ₽</th><th>Отработано $</th>
+    </tr></thead><tbody>${rows.slice().reverse().map(r => `<tr>
+      <td class="nm">${monLabel(r.key)}</td>
+      <td>${r.lessons || '<span class="zero">—</span>'}</td>
+      <td>${r.hours ? hours(r.hours) : '<span class="zero">—</span>'}</td>
+      <td>${r.recRUB ? money(r.recRUB,'RUB') : '<span class="zero">—</span>'}</td>
+      <td>${r.recUSD ? money(r.recUSD,'USD') : '<span class="zero">—</span>'}</td>
+      <td>${r.earnRUB ? money(r.earnRUB,'RUB') : '<span class="zero">—</span>'}</td>
+      <td>${r.earnUSD ? money(r.earnUSD,'USD') : '<span class="zero">—</span>'}</td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td>Итого</td><td>${sum('lessons')}</td><td>${hours(H)}</td>
+      <td>${money(sum('recRUB'),'RUB')}</td><td>${money(sum('recUSD'),'USD')}</td>
+      <td>${money(sum('earnRUB'),'RUB')}</td><td>${money(sum('earnUSD'),'USD')}</td></tr></tfoot>
+    </table></div>`;
+
+  // вклад учеников за период
+  const top = data.students.map(s => {
+    const m = metrics(s.id);
+    const ls = data.lessons.filter(l => l.studentId === s.id && l.consumes
+                                   && (!from || monKey(l.date) >= from));
+    const hs = data.lessons.filter(l => l.studentId === s.id && l.status === 'held'
+                                   && (!from || monKey(l.date) >= from)).length * m.mins / 60;
+    const earn = ls.reduce((a,l) => a + (m.priceOf[l.id] ?? s.defaultPrice), 0);
+    return {s, n:ls.length, hs, earn};
+  }).filter(r => r.n > 0).sort((a,b) => b.hs - a.hs);
+
+  const topTable = `<div class="card"><h3>Вклад учеников за период</h3>
+    <div class="csub">Отсортировано по часам занятий</div>
+    <table class="data"><thead><tr><th>Ученик</th><th>Уроков</th><th>Часов</th>
+      <th>Заработано</th><th>Доход за час</th></tr></thead><tbody>
+    ${top.map(r => `<tr class="rowlink" data-student="${r.s.id}">
+      <td class="nm">${esc(r.s.name)}</td><td>${r.n}</td><td>${hours(r.hs)}</td>
+      <td>${money(r.earn, r.s.currency)}</td>
+      <td>${r.hs ? money(r.earn/r.hs, r.s.currency) : '—'}</td></tr>`).join('')}
+    </tbody></table></div>`;
+
+  return `<div class="page">
+    <div class="pagehead">
+      <div><h2>Финансовый монитор</h2>
+        <div class="dsub">Доход и часы за ${moneyMonths ? 'последние ' + nMon + ' мес.' : 'всё время'}
+          · валюты не смешиваются</div></div>
+      <div class="spacer" style="flex:1"></div>
+      ${btn(6,'6 мес')}${btn(12,'12 мес')}${btn(24,'24 мес')}${btn(0,'Всё время')}
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="k">Отработано за период</div>
+        <div class="v">${money(sum('earnRUB'),'RUB')}</div>
+        <div class="v2">${money(sum('earnUSD'),'USD')}</div>
+        <div class="d">проведённые и списанные уроки</div></div>
+      <div class="tile"><div class="k">Получено оплат</div>
+        <div class="v">${money(sum('recRUB'),'RUB')}</div>
+        <div class="v2">${money(sum('recUSD'),'USD')}</div>
+        <div class="d">пакеты, оплаченные в периоде</div></div>
+      <div class="tile"><div class="k">Часов занятий</div>
+        <div class="v">${hours(H)}<small>ч</small></div>
+        <div class="v2">${sum('lessons')} уроков</div>
+        <div class="d">в среднем ${hours(H/nMon)} ч в месяц</div></div>
+      <div class="tile"><div class="k">Доход за час</div>
+        <div class="v">${money(rateR,'RUB')}</div>
+        <div class="v2">${money(rateU,'USD')}</div>
+        <div class="d">заработано ÷ часы занятий</div></div>
+      <div class="tile"><div class="k">В среднем за месяц</div>
+        <div class="v">${money(sum('earnRUB')/nMon,'RUB')}</div>
+        <div class="v2">${money(sum('earnUSD')/nMon,'USD')}</div>
+        <div class="d">по ${nMon} мес. периода</div></div>
+      <div class="tile"><div class="k">Обязательства сейчас</div>
+        <div class="v">${money(owe.RUB,'RUB')}</div>
+        <div class="v2">${money(owe.USD,'USD')}</div>
+        <div class="d">оплачено, но не проведено</div></div>
+      <div class="tile"><div class="k">Активных учеников</div>
+        <div class="v">${active}</div>
+        <div class="d">в архиве ${data.students.length - active}</div></div>
+    </div>
+
+    ${chartCard('Отработано по месяцам, ₽','Стоимость списанных уроков в рублях',
+                rows,'earnRUB','money', v => compact(v) + ' ₽')}
+    ${chartCard('Отработано по месяцам, $','Стоимость списанных уроков в долларах',
+                rows,'earnUSD','usd', v => compact(v) + ' $')}
+    ${chartCard('Часы занятий по месяцам','Только фактически проведённые уроки',
+                rows,'hours','hours', v => hours(v) + ' ч')}
+    ${table}
+    ${topTable}
+  </div>`;
+}
+
+/* ═══════════════════════════  ЭКРАН «УЧЕНИКИ / АРХИВ»  ═══════════════════════════ */
+
+function renderPeople(){
+  const list = data.students
+    .filter(s => peopleScope === 'archive' ? s.archived : true)
+    .filter(s => s.name.toLowerCase().includes(filter.toLowerCase().trim()))
+    .map(s => metrics(s.id))
+    .sort((a,b) => (b.last || '').localeCompare(a.last || ''));
+
+  const tot = list.reduce((a,m) => ({
+    held:a.held + m.held, hours:a.hours + m.hoursHeld,
+    RUB:a.RUB + (m.student.currency === 'RUB' ? m.earned : 0),
+    USD:a.USD + (m.student.currency === 'USD' ? m.earned : 0),
+  }), {held:0, hours:0, RUB:0, USD:0});
+
+  const rows = list.map(m => {
+    const s = m.student;
+    const period = m.first ? `${fmtDate(m.first)} — ${fmtDate(m.last)}` : '—';
+    const rest = m.balance < 0 ? `<span style="color:var(--debt)">−${m.debt}</span>`
+               : m.balance === 0 ? '<span class="zero">0</span>' : m.balance;
+    return `<tr>
+      <td class="nm rowlink" data-student="${s.id}">${esc(s.name)}${s.archived
+          ? ' <span class="badge">архив</span>' : ''}</td>
+      <td style="text-align:left">${period}</td>
+      <td>${m.months || '—'}</td>
+      <td>${m.held}</td>
+      <td>${hours(m.hoursHeld)}</td>
+      <td>${m.cancelledFree + m.cancelledLate + m.noShow || '<span class="zero">—</span>'}</td>
+      <td>${m.perMonth ? (Math.round(m.perMonth*10)/10).toLocaleString('ru-RU') : '—'}</td>
+      <td>${money(s.defaultPrice, s.currency)}</td>
+      <td>${money(m.paid, s.currency)}</td>
+      <td>${money(m.earned, s.currency)}</td>
+      <td>${rest}</td>
+      <td><div class="miniactions">
+        <button data-open="${s.id}">Карточка</button>
+        ${s.archived ? `<button data-unarch="${s.id}">Вернуть</button>` : ''}
+      </div></td></tr>`;
+  }).join('');
+
+  const empty = `<div class="empty"><h3>${peopleScope === 'archive'
+      ? 'В архиве пока никого' : 'Учеников пока нет'}</h3>
+    <div>${peopleScope === 'archive'
+      ? 'Ученик попадает сюда из карточки — кнопкой «В архив». Вся история занятий и оплат сохраняется.'
+      : 'Нажмите «+ Ученик», чтобы добавить первого'}</div></div>`;
+
+  return `<div class="page">
+    <div class="pagehead">
+      <div><h2>${peopleScope === 'archive' ? 'Архив учеников' : 'Все ученики'}</h2>
+        <div class="dsub">Полная метрика за всё время занятий, без календарной сетки</div></div>
+      <div class="spacer" style="flex:1"></div>
+      <div class="tabs">
+        <button data-scope="archive" class="${peopleScope === 'archive' ? 'on' : ''}">Архив</button>
+        <button data-scope="all" class="${peopleScope === 'all' ? 'on' : ''}">Все ученики</button>
+      </div>
+    </div>
+
+    <div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));max-width:800px">
+      <div class="tile"><div class="k">${peopleScope === 'archive' ? 'В архиве' : 'Всего учеников'}</div>
+        <div class="v">${list.length}</div></div>
+      <div class="tile"><div class="k">Проведено уроков</div><div class="v">${tot.held}</div></div>
+      <div class="tile"><div class="k">Часов занятий</div><div class="v">${hours(tot.hours)}<small>ч</small></div></div>
+      <div class="tile"><div class="k">Заработано с них</div>
+        <div class="v">${money(tot.RUB,'RUB')}</div><div class="v2">${money(tot.USD,'USD')}</div></div>
+    </div>
+
+    ${list.length ? `<div class="card"><table class="data"><thead><tr>
+      <th>Ученик</th><th style="text-align:left">Период занятий</th><th>Мес.</th>
+      <th>Уроков</th><th>Часов</th><th>Отмен</th><th>Уроков в мес.</th>
+      <th>Цена</th><th>Оплачено</th><th>Заработано</th><th>Остаток</th><th></th>
+    </tr></thead><tbody>${rows}</tbody></table></div>` : empty}
+  </div>`;
+}
+
+/* ═══════════════════════════  ДЕЙСТВИЯ НАД ЗАНЯТИЯМИ  ═══════════════════════════ */
+
+const getLesson = (sid, date) => data.lessons.find(l => l.studentId === sid && l.date === date) || null;
+const nameOf = sid => (data.students.find(s => s.id === sid) || {}).name || '—';
+
+function setStatus(sid, date, status, opts = {}){
+  const ex = getLesson(sid, date);
+  const value = status === null ? null : {
+    id: ex ? ex.id : uid(), studentId:sid, date, status,
+    consumes: opts.consumes !== undefined ? opts.consumes : STATUS[status].consumes,
+    movedTo: ex ? ex.movedTo : null, note: ex ? ex.note : '', updatedAt: Date.now(),
+  };
+  const title = status === null ? 'Отметка снята' : STATUS[status].label;
+  commit({kind:'lesson', key:sid + '|' + date, value},
+         {kind:'lesson', studentId:sid, title:`${nameOf(sid)} — ${title.toLowerCase()}`,
+          sub:fmtDate(date) + (value && !value.consumes && status ? ' · урок не списывается' : '')});
+}
+function toggleHeld(sid, date){
+  const ex = getLesson(sid, date);
+  if (!ex){
+    const c = calc(sid);
+    if (c.balance <= 0) toast(`У ${nameOf(sid)} нет оплаченных уроков — занятие уйдёт в долг`, 'warn',
+                              {label:'Внести оплату', fn:() => paymentDialog(sid)});
+  }
+  setStatus(sid, date, ex && ex.status === 'held' ? null : 'held');
+}
+function setNote(sid, date, note){
+  const ex = getLesson(sid, date); if (!ex) return;
+  commit({kind:'lesson', key:sid + '|' + date, value:{...ex, note, updatedAt:Date.now()}},
+         {kind:'lesson', studentId:sid, title:`${nameOf(sid)} — заметка к уроку`,
+          sub:fmtDate(date) + (note ? ' · ' + note : ' · заметка удалена')});
+}
+function toggleConsumes(sid, date){
+  const ex = getLesson(sid, date); if (!ex) return;
+  commit({kind:'lesson', key:sid + '|' + date, value:{...ex, consumes:ex.consumes ? 0 : 1, updatedAt:Date.now()}},
+         {kind:'lesson', studentId:sid,
+          title:`${nameOf(sid)} — урок ${ex.consumes ? 'больше не списывается' : 'снова списывается'}`,
+          sub:fmtDate(date)});
+}
+
+/* ═══════════════════════════  МЕНЮ ЯЧЕЙКИ  ═══════════════════════════ */
+
+function cellMenu(x, y, sid, date){
+  closeMenu();
+  const ex = getLesson(sid, date);
+  const m = document.createElement('div');
+  m.className = 'menu'; m.id = 'menu';
+  const item = (sym, label, kbd = '') =>
+    `<div data-a="${esc(label)}"><span class="sym">${sym}</span>${label}${kbd ? `<span class="kbd">${kbd}</span>` : ''}</div>`;
+  const head = `<div class="mhead">${esc(nameOf(sid))} · ${fmtDate(date)}${
+      ex && ex.updatedAt ? '<br>изменено ' + fmtTime(ex.updatedAt) : ''}</div>`;
+  m.innerHTML = head +
+    Object.entries(STATUS).map(([k,v]) => item(v.sym, v.label, v.key)).join('') +
+    '<div class="msep"></div>' +
+    (ex ? item('⇄', ex.consumes ? 'Не списывать этот урок' : 'Списывать этот урок') : '') +
+    (ex ? item('✎', ex.note ? 'Изменить заметку' : 'Добавить заметку') : '') +
+    (ex ? item('␡', 'Очистить ячейку', '⌫') : '');
+  document.body.appendChild(m);
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px';
+  m.style.top  = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
+  m.onclick = e => {
+    const a = e.target.closest('[data-a]'); if (!a) return;
+    const label = a.dataset.a;
+    const st = Object.entries(STATUS).find(([,v]) => v.label === label);
+    if (st) setStatus(sid, date, st[0]);
+    else if (label === 'Очистить ячейку') setStatus(sid, date, null);
+    else if (label.includes('списывать')) toggleConsumes(sid, date);
+    else if (label.includes('заметку')) noteDialog(sid, date);
+    closeMenu();
+  };
+}
+const closeMenu = () => {const m = document.getElementById('menu'); if (m) m.remove()};
+
+/* ═══════════════════════════  ОКНА  ═══════════════════════════ */
+
+function overlay(inner, cls){
+  const o = document.createElement('div'); o.className = 'overlay';
+  o.innerHTML = `<div class="${cls}">${inner}</div>`;
+  o.onclick = e => {if (e.target === o) close()};
+  const close = () => {o.remove(); document.removeEventListener('keydown', esc2, true)};
+  const esc2 = e => {if (e.key === 'Escape'){e.stopPropagation(); close()}};
+  document.addEventListener('keydown', esc2, true);
+  document.body.appendChild(o);
+  o.close = close;
+  return o;
+}
+function toast(text, kind = '', action = null){
+  const t = document.createElement('div');
+  t.className = 'toast ' + kind;
+  t.innerHTML = `<span>${esc(text)}</span>`;
+  if (action){
+    const b = document.createElement('button');
+    b.textContent = action.label;
+    b.onclick = () => {action.fn(); t.remove()};
+    t.appendChild(b);
+  }
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), action ? 7000 : 3200);
+}
+function confirmDialog(title, text, okLabel, onOk){
+  const o = overlay(`<h2>${esc(title)}</h2><div class="dsub">${esc(text)}</div>
+    <div class="actions"><button data-x="no">Отмена</button>
+    <button class="primary" data-x="yes">${esc(okLabel)}</button></div>`, 'modal');
+  o.querySelector('[data-x=no]').onclick = () => o.close();
+  o.querySelector('[data-x=yes]').onclick = () => {o.close(); onOk()};
+  return o;
+}
+function noteDialog(sid, date){
+  const ex = getLesson(sid, date);
+  const o = overlay(`<h2>Заметка к уроку</h2>
+    <div class="dsub">${esc(nameOf(sid))} · ${fmtDate(date)}</div>
+    <textarea id="nt" rows="3" placeholder="Что прошли, что задано">${esc(ex.note || '')}</textarea>
+    <div class="actions"><button data-x="c">Отмена</button>
+    <button class="primary" data-x="s">Сохранить</button></div>`, 'modal');
+  o.querySelector('#nt').focus();
+  o.querySelector('[data-x=c]').onclick = () => o.close();
+  o.querySelector('[data-x=s]').onclick = () => {setNote(sid, date, o.querySelector('#nt').value.trim()); o.close()};
+}
+
+/* ── Карточка ученика ── */
+function studentPanel(sid){
+  const m = metrics(sid), c = m, s = c.student;
+  const rows = c.pkgs.map((p,i) => `<tr class="${c.used[i] >= p.lessons ? 'done' : ''}">
+      <td>${fmtDate(p.purchasedOn)}</td><td>${p.lessons}</td>
+      <td>${money(p.pricePerLesson, p.currency)}</td>
+      <td>${money(p.lessons * p.pricePerLesson, p.currency)}</td>
+      <td><span class="badge${c.used[i] >= p.lessons ? ' full' : ''}">${c.used[i]} / ${p.lessons}</span></td>
+    </tr>`).reverse().join('') || '<tr><td colspan="5" style="color:var(--muted)">пакетов пока нет</td></tr>';
+
+  const banner = c.level === 'ok' ? '' : `<div class="banner ${c.level}">${
+      c.level === 'debt' ? `Занимается в долг: ${c.debt} урок(а). Нужна оплата.`
+    : c.level === 'zero' ? 'Уроки закончились — нужна оплата.'
+    : 'Остался последний урок в пакете.'}</div>`;
+
+  const log = data.audit.filter(a => a.studentId === sid).slice(0, 6).map(a =>
+    `<div class="logrow"><span class="kdot ${a.kind}"></span><span class="time">${fmtTime(a.ts)}</span>
+       <span class="body"><div class="t">${esc(a.title)}</div>
+       <div class="s">${esc(a.sub || fmtDate(iso(new Date(a.ts))))}</div></span></div>`
+  ).join('') || '<div class="hint">Изменений пока не было</div>';
+
+  const o = overlay(`
+    ${banner}
+    <h2>${esc(s.name)}</h2>
+    <div class="dsub">${money(s.defaultPrice, s.currency)} за урок · пакет по умолчанию ${s.defaultPackage}
+      ${s.contact ? '· ' + esc(s.contact) : ''}</div>
+    <div class="stats">
+      <div class="stat"><div class="k">Баланс уроков</div><div class="v">${c.balance}</div></div>
+      <div class="stat"><div class="k">Из текущего пакета</div><div class="v">${c.leftInCurrent} / ${c.current ? c.current.lessons : 0}</div></div>
+      <div class="stat"><div class="k">Куплено за всё время</div><div class="v">${c.totalBought}</div></div>
+      <div class="stat"><div class="k">Проведено за всё время</div><div class="v">${c.totalConsumed}</div></div>
+      <div class="stat"><div class="k">Часов занятий</div><div class="v">${hours(m.hoursHeld)}</div></div>
+      <div class="stat"><div class="k">Заработано с ученика</div><div class="v" style="font-size:16px">${money(m.earned, s.currency)}</div></div>
+    </div>
+    <div class="hint">Занимается с ${m.first ? fmtDate(m.first) : '—'} · ${m.months} мес. ·
+      в среднем ${(Math.round(m.perMonth*10)/10).toLocaleString('ru-RU')} урока в месяц<br>
+      Последнее занятие: ${c.lastLesson ? fmtDate(c.lastLesson.date) : '—'} ·
+      последняя оплата: ${c.current ? fmtDate(c.current.purchasedOn) : '—'} ·
+      отмен: ${m.cancelledFree + m.cancelledLate + m.noShow}</div>
+
+    <h3>История пакетов</h3>
+    <table class="mini"><thead><tr><th>Оплата</th><th>Уроков</th><th>Цена</th><th>Сумма</th><th>Израсходовано</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+
+    <h3>Настройки ученика</h3>
+    <div class="two">
+      <div class="field"><label>Имя</label><input id="f-name" value="${esc(s.name)}"></div>
+      <div class="field"><label>Контакт</label><input id="f-contact" value="${esc(s.contact)}" placeholder="телефон / ник"></div>
+      <div class="field"><label>Валюта</label><select id="f-cur">
+        <option value="RUB"${s.currency === 'RUB' ? ' selected' : ''}>₽ рубли</option>
+        <option value="USD"${s.currency === 'USD' ? ' selected' : ''}>$ доллары</option></select></div>
+      <div class="field"><label>Цена за урок</label><input id="f-price" type="number" min="0" value="${s.defaultPrice}"></div>
+      <div class="field"><label>Длительность урока, мин</label><input id="f-min" type="number" min="15" step="15" value="${m.mins}"></div>
+      <div class="field"><label>Пакет по умолчанию</label><input id="f-pkg" type="number" min="1" value="${s.defaultPackage}"></div>
+      <div class="field"><label>Предупреждать при остатке</label><input id="f-warn" type="number" min="0"
+        value="${s.warnAt ?? ''}" placeholder="по умолчанию ${data.settings.warnAt}"></div>
+    </div>
+    <div class="field"><label>Заметки</label><textarea id="f-notes" rows="2">${esc(s.notes)}</textarea></div>
+
+    <h3>Последние изменения</h3>${log}
+
+    <div class="actions">
+      <button id="b-arch">${s.archived ? 'Вернуть из архива' : 'В архив'}</button>
+      <span class="spacer"></span>
+      <button id="b-pay">Добавить оплату</button>
+      <button id="b-save" class="primary">Сохранить</button>
+    </div>`, 'drawer');
+
+  o.querySelector('#b-save').onclick = () => {
+    const w = o.querySelector('#f-warn').value;
+    const next = {...s,
+      name: o.querySelector('#f-name').value.trim() || s.name,
+      contact: o.querySelector('#f-contact').value.trim(),
+      currency: o.querySelector('#f-cur').value,
+      defaultPrice: Math.max(0, +o.querySelector('#f-price').value || 0),
+      lessonMinutes: Math.max(5, +o.querySelector('#f-min').value || 60),
+      defaultPackage: Math.max(1, +o.querySelector('#f-pkg').value || 8),
+      warnAt: w === '' ? null : Math.max(0, +w),
+      notes: o.querySelector('#f-notes').value};
+    const diff = [];
+    if (next.name !== s.name) diff.push(`имя: ${s.name} → ${next.name}`);
+    if (next.currency !== s.currency) diff.push(`валюта: ${s.currency} → ${next.currency}`);
+    if (next.defaultPrice !== s.defaultPrice) diff.push(`цена: ${s.defaultPrice} → ${next.defaultPrice}`);
+    if (next.lessonMinutes !== m.mins) diff.push(`длительность: ${m.mins} → ${next.lessonMinutes} мин`);
+    if (next.defaultPackage !== s.defaultPackage) diff.push(`пакет: ${s.defaultPackage} → ${next.defaultPackage}`);
+    if (next.warnAt !== s.warnAt) diff.push(`порог: ${s.warnAt ?? 'по умолчанию'} → ${next.warnAt ?? 'по умолчанию'}`);
+    if (!diff.length && next.notes === s.notes && next.contact === s.contact){ o.close(); return }
+    commit({kind:'student', key:String(s.id), value:next},
+           {kind:'student', studentId:s.id, title:`Изменена карточка: ${next.name}`,
+            sub:diff.join(', ') || 'заметки и контакт'});
+    o.close(); toast('Карточка сохранена', 'ok');
+  };
+  o.querySelector('#b-pay').onclick = () => {o.close(); paymentDialog(sid)};
+  o.querySelector('#b-arch').onclick = () => {
+    const to = s.archived ? 0 : 1;
+    const act = () => {
+      commit({kind:'student', key:String(s.id), value:{...s, archived:to}},
+             {kind:'student', studentId:s.id,
+              title:`${s.name} ${to ? 'убран(а) в архив' : 'возвращён(а) из архива'}`,
+              sub:'история занятий сохранена'});
+      o.close(); toast(to ? 'Ученик в архиве' : 'Ученик снова в сетке', 'ok');
+    };
+    if (to) confirmDialog('Убрать в архив?', `${s.name} исчезнет из сетки, но вся история занятий и оплат сохранится. Вернуть можно в любой момент.`, 'В архив', act);
+    else act();
+  };
+}
+
+/* ── Оплата ── */
+function paymentDialog(sid){
+  const avail = data.students.filter(s => !s.archived);
+  if (!avail.length){ toast('Сначала добавьте ученика'); return }
+  const cur = sid && avail.find(s => s.id === sid) ? sid : avail[0].id;
+  const o = overlay(`
+    <h2>Оплата пакета</h2><div class="dsub">Баланс уроков увеличится сразу после сохранения</div>
+    <div class="field"><label>Ученик</label><select id="p-st">${
+      avail.map(s => `<option value="${s.id}"${s.id === cur ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
+    <div class="two">
+      <div class="field"><label>Дата оплаты</label><input id="p-date" type="date" value="${iso(new Date())}"></div>
+      <div class="field"><label>Количество уроков</label><input id="p-n" type="number" min="1" value="8"></div>
+      <div class="field"><label>Цена за урок</label><input id="p-price" type="number" min="0"></div>
+      <div class="field"><label>Сумма пакета</label><input id="p-total" type="number" min="0"></div>
+    </div>
+    <div class="field"><label>Комментарий</label><input id="p-c" placeholder="необязательно"></div>
+    <div class="hint" id="p-hint"></div>
+    <div class="actions"><button data-x="c">Отмена</button>
+      <button class="primary" data-x="s">Сохранить оплату</button></div>`, 'modal');
+
+  const $ = q => o.querySelector(q);
+  const sync = src => {
+    const n = Math.max(0, +$('#p-n').value || 0);
+    if (src === 'total') $('#p-price').value = n ? Math.round((+$('#p-total').value || 0) / n) : 0;
+    else $('#p-total').value = Math.round((+$('#p-price').value || 0) * n);
+    const c = calc(+$('#p-st').value);
+    $('#p-hint').textContent = `Сейчас баланс: ${c.balance}. После оплаты станет: ${c.balance + n}.`;
+  };
+  const fill = () => {
+    const s = data.students.find(x => x.id === +$('#p-st').value);
+    $('#p-price').value = s.defaultPrice; $('#p-n').value = s.defaultPackage; sync('price');
+  };
+  fill();
+  $('#p-st').onchange = fill;
+  ['#p-n','#p-price'].forEach(q => $(q).oninput = () => sync('price'));
+  $('#p-total').oninput = () => sync('total');
+  $('[data-x=c]').onclick = () => o.close();
+  $('[data-x=s]').onclick = () => {
+    const s = data.students.find(x => x.id === +$('#p-st').value);
+    const n = Math.max(0, +$('#p-n').value || 0);
+    if (!n){ toast('Укажите количество уроков', 'warn'); $('#p-n').focus(); return }
+    const price = Math.max(0, +$('#p-price').value || 0);
+    const id = uid();
+    commit({kind:'package', key:String(id), value:{id, studentId:s.id, purchasedOn:$('#p-date').value,
+              lessons:n, pricePerLesson:price, currency:s.currency,
+              comment:$('#p-c').value.trim(), createdAt:Date.now()}},
+           {kind:'package', studentId:s.id, title:`Оплата: ${s.name} — ${n} уроков`,
+            sub:`${money(n*price, s.currency)} · ${fmtDate($('#p-date').value)}`});
+    o.close(); toast(`Пакет ${n} уроков добавлен`, 'ok');
+  };
+}
+
+/* ── Новый ученик ── */
+function newStudentDialog(){
+  const o = overlay(`
+    <h2>Новый ученик</h2><div class="dsub">Оплату можно внести сразу после добавления</div>
+    <div class="field"><label>Имя</label><input id="n-name" placeholder="Например, Миша Орлов"></div>
+    <div class="two">
+      <div class="field"><label>Валюта</label><select id="n-cur">
+        <option value="RUB">₽ рубли</option><option value="USD">$ доллары</option></select></div>
+      <div class="field"><label>Цена за урок</label><input id="n-price" type="number" min="0" value="1500"></div>
+      <div class="field"><label>Пакет по умолчанию</label><input id="n-pkg" type="number" min="1" value="8"></div>
+      <div class="field"><label>Длительность урока, мин</label><input id="n-min" type="number" min="15" step="15" value="60"></div>
+      <div class="field"><label>Контакт</label><input id="n-contact" placeholder="телефон / ник"></div>
+    </div>
+    <div class="actions"><button data-x="c">Отмена</button>
+      <button class="primary" data-x="s">Добавить</button></div>`, 'modal');
+  o.querySelector('#n-name').focus();
+  o.querySelector('[data-x=c]').onclick = () => o.close();
+  o.querySelector('[data-x=s]').onclick = () => {
+    const name = o.querySelector('#n-name').value.trim();
+    if (!name){ toast('Введите имя', 'warn'); o.querySelector('#n-name').focus(); return }
+    const id = uid();
+    commit({kind:'student', key:String(id), value:{id, name,
+        contact:o.querySelector('#n-contact').value.trim(),
+        currency:o.querySelector('#n-cur').value,
+        defaultPrice:Math.max(0, +o.querySelector('#n-price').value || 0),
+        defaultPackage:Math.max(1, +o.querySelector('#n-pkg').value || 8),
+        lessonMinutes:Math.max(5, +o.querySelector('#n-min').value || 60),
+        warnAt:null, notes:'', archived:0, order:data.students.length, createdAt:Date.now()}},
+      {kind:'student', studentId:id, title:`Добавлен ученик: ${name}`, sub:'карточка создана'});
+    o.close();
+    toast(`${name} добавлен(а)`, 'ok', {label:'Внести оплату', fn:() => paymentDialog(id)});
+  };
+}
+
+/* ── Журнал изменений ── */
+function historyPanel(studentFilter = ''){
+  const opts = ['<option value="">Все ученики</option>'].concat(
+    data.students.map(s => `<option value="${s.id}"${String(s.id) === studentFilter ? ' selected' : ''}>${esc(s.name)}</option>`)).join('');
+  const list = data.audit.filter(a => !studentFilter || String(a.studentId) === studentFilter);
+
+  let body = '', lastDay = '';
+  list.slice(0, 150).forEach(a => {
+    const day = fmtDate(iso(new Date(a.ts)));
+    const todayD = fmtDate(iso(new Date()));
+    if (day !== lastDay){
+      lastDay = day;
+      body += `<div class="logday">${day === todayD ? 'сегодня, ' + day : day}</div>`;
+    }
+    body += `<div class="logrow"><span class="kdot ${a.kind}"></span>
+      <span class="time">${fmtTime(a.ts)}</span>
+      <span class="body"><div class="t">${esc(a.title)}</div>
+        ${a.sub ? `<div class="s">${esc(a.sub)}</div>` : ''}</span>
+      ${a.inverse ? `<button data-rev="${a.id}">Вернуть</button>` : ''}</div>`;
+  });
+  if (!list.length) body = '<div class="hint">Изменений пока не было</div>';
+
+  const o = overlay(`
+    <h2>Журнал изменений</h2>
+    <div class="dsub">Полная история правок: что, когда и по какому ученику. Запись из журнала не удаляется — откат тоже попадает в историю.</div>
+    <div class="filterbar"><select id="h-f">${opts}</select>
+      <button id="h-exp">Выгрузить CSV</button></div>
+    ${body}`, 'drawer');
+
+  o.querySelector('#h-f').onchange = e => {o.close(); historyPanel(e.target.value)};
+  o.querySelector('#h-exp').onclick = () => {
+    const rows = [['Дата','Время','Тип','Ученик','Что изменено','Подробности']].concat(
+      list.map(a => [fmtDate(iso(new Date(a.ts))), fmtTime(a.ts), a.kind,
+                     a.studentId ? nameOf(a.studentId) : '', a.title, a.sub]));
+    download('журнал-изменений-' + iso(new Date()) + '.csv',
+             '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n'),
+             'text/csv');
+  };
+  o.addEventListener('click', e => {
+    const b = e.target.closest('[data-rev]');
+    if (b){ revertEntry(+b.dataset.rev); o.close(); historyPanel(studentFilter) }
+  });
+}
+
+/* ── Меню «Ещё» ── */
+function moreMenu(x, y){
+  closeMenu();
+  const m = document.createElement('div');
+  m.className = 'menu'; m.id = 'menu';
+  m.innerHTML =
+    `<div data-a="theme"><span class="sym">◐</span>${document.documentElement.dataset.theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}</div>` +
+    `<div data-a="arch"><span class="sym">${showArchived ? '☑' : '☐'}</span>Архивные в сетке</div>` +
+    '<div class="msep"></div>' +
+    '<div data-a="exp"><span class="sym">⭳</span>Сохранить копию (JSON)</div>' +
+    '<div data-a="csv"><span class="sym">⭳</span>Экспорт занятий (CSV)</div>' +
+    '<div data-a="imp"><span class="sym">⭱</span>Импорт из файла…</div>' +
+    '<div data-a="snaps"><span class="sym">◷</span>Снимки данных…</div>' +
+    (fsSupported ? (fileState === 'on'
+        ? '<div data-a="unbind"><span class="sym">▢</span>Отключить файл данных</div>'
+        : '<div data-a="bind"><span class="sym">▣</span>Хранить данные в файле…</div>') : '') +
+    '<div class="msep"></div>' +
+    '<div data-a="demo"><span class="sym">✳</span>Загрузить пример данных</div>' +
+    '<div data-a="wipe"><span class="sym">↺</span>Начать заново…</div>';
+  document.body.appendChild(m);
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px';
+  m.style.top = y + 'px';
+  m.onclick = e => {
+    const a = e.target.closest('[data-a]'); if (!a) return;
+    const act = a.dataset.a; closeMenu();
+    if (act === 'theme') setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+    if (act === 'arch'){ showArchived = !showArchived; render() }
+    if (act === 'exp') exportJSON();
+    if (act === 'csv') exportLessonsCsv();
+    if (act === 'imp') importJson();
+    if (act === 'snaps') snapshotsDialog();
+    if (act === 'bind') bindFile();
+    if (act === 'unbind') unbindFile();
+    if (act === 'demo') confirmDialog('Загрузить пример данных?',
+      'Текущие данные будут заменены примером. Перед заменой сохранится снимок — вернуть его можно через «Снимки данных».',
+      'Загрузить пример',
+      () => {writeSnapshot('before-reset', true); startDemo(); toast('Пример данных загружен', 'ok')});
+    if (act === 'wipe') confirmDialog('Начать заново?',
+      'Все ученики, занятия и оплаты будут удалены. Перед очисткой сохранится снимок — вернуть его можно через «Снимки данных».',
+      'Очистить всё',
+      () => {writeSnapshot('before-reset', true); startClean(); toast('Журнал очищен', 'ok')});
+  };
+}
+
+function exportJSON(){
+  data.settings.lastExportAt = Date.now();
+  persist();
+  download('журнал-копия-' + iso(new Date()) + '.json', JSON.stringify(data, null, 1), 'application/json');
+  toast('Резервная копия сохранена в загрузки', 'ok');
+  render();
+}
+
+const TAG_RU = {'boot':'при запуске', 'before-import':'перед импортом',
+                'before-reset':'перед очисткой', 'before-restore':'перед восстановлением'};
+function snapshotsDialog(){
+  const rows = snapshots().map(s => `<div class="logrow"><span class="kdot"></span>
+      <span class="body"><div class="t">${fmtDate(s.date)} · ${TAG_RU[s.tag] || esc(s.tag)}</div>
+      <div class="s">${s.students} учеников · ${s.lessons} занятий</div></span>
+      <button data-snap="${esc(s.key)}" style="opacity:1">Восстановить</button></div>`).join('')
+    || '<div class="hint">Снимков пока нет — первый появится при следующем запуске.</div>';
+  const o = overlay(`<h2>Снимки данных</h2>
+    <div class="dsub">Автоматические копии: при первом запуске за день и перед рискованными
+      действиями. Хранятся последние 6. Это защита от случайностей, а не замена
+      резервной копии в файл.</div>${rows}`, 'drawer');
+  o.addEventListener('click', e => {
+    const b = e.target.closest('[data-snap]');
+    if (!b) return;
+    confirmDialog('Восстановить снимок?',
+      'Текущие данные будут заменены снимком. Перед восстановлением сохранится их копия.',
+      'Восстановить', () => {o.close(); restoreSnapshot(b.dataset.snap)});
+  });
+}
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function exportLessonsCsv(){
+  const rows = [['Ученик','Дата','Статус','Списан','Заметка','Валюта','Цена урока']];
+  data.students.forEach(s => {
+    const c = calc(s.id);
+    data.lessons.filter(l => l.studentId === s.id).sort((a,b) => a.date.localeCompare(b.date))
+      .forEach(l => rows.push([s.name, l.date, STATUS[l.status].label, l.consumes ? 'да' : 'нет',
+                               l.note || '', s.currency, c.priceOf[l.id] ?? s.defaultPrice]));
+  });
+  download('занятия-' + iso(new Date()) + '.csv',
+           '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n'), 'text/csv');
+}
+function importJson(){
+  const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json';
+  i.onchange = () => {
+    const r = new FileReader();
+    r.onload = () => {
+      const d = tryParse(r.result);
+      if (!d){ toast('Файл не похож на данные журнала', 'warn'); return }
+      const o = overlay(`<h2>Импорт данных</h2>
+        <div class="dsub">Текущие данные будут полностью заменены содержимым файла.
+          Перед заменой сохранится снимок — вернуть его можно через ⋯ → «Снимки данных».</div>
+        <table class="mini"><thead><tr><th></th><th>Сейчас</th><th>В файле</th></tr></thead><tbody>
+          <tr><td>Учеников</td><td>${data.students.length}</td><td>${d.students.length}</td></tr>
+          <tr><td>Занятий</td><td>${data.lessons.length}</td><td>${(d.lessons || []).length}</td></tr>
+          <tr><td>Оплат</td><td>${data.packages.length}</td><td>${(d.packages || []).length}</td></tr>
+          <tr><td>Сохранён</td><td>${data.savedAt ? fmtDate(iso(new Date(data.savedAt))) : '—'}</td>
+              <td>${d.savedAt ? fmtDate(iso(new Date(d.savedAt))) : '—'}</td></tr>
+        </tbody></table>
+        <div class="actions"><button data-x="c">Отмена</button>
+          <button class="primary" data-x="s">Заменить данные</button></div>`, 'modal');
+      o.querySelector('[data-x=c]').onclick = () => o.close();
+      o.querySelector('[data-x=s]').onclick = () => {o.close(); importData(d)};
+    };
+    r.readAsText(i.files[0]);
+  };
+  i.click();
+}
+function importData(d){
+  writeSnapshot('before-import', true);
+  data = normalize(d);
+  undoStack = []; redoStack = [];
+  data.settings.lastExportAt = Date.now();       // источник импорта и есть свежая копия
+  logAudit({kind:'system', title:'Импорт данных из файла',
+            sub:data.students.length + ' учеников, ' + data.lessons.length + ' занятий'});
+  document.documentElement.dataset.theme = data.settings.theme || 'light';
+  persist(); render();
+  toast('Данные загружены', 'ok');
+}
+function setTheme(t){
+  document.documentElement.dataset.theme = t;
+  data.settings.theme = t; persist();
+}
+
+/* ═══════════════════════════  СОБЫТИЯ  ═══════════════════════════ */
+
+const host = document.getElementById('gridhost');
+
+/* Длинное нажатие на телефоне = правый клик мышью */
+let pressTimer = null, pressStart = null, suppressClick = false, longPressed = false;
+const cancelPress = () => {if (pressTimer){ clearTimeout(pressTimer); pressTimer = null }};
+host.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'touch') return;
+  const c = e.target.closest('td.day'); if (!c) return;
+  pressStart = {x:e.clientX, y:e.clientY};
+  const sid = +c.dataset.s, date = c.dataset.d;
+  pressTimer = setTimeout(() => {
+    pressTimer = null; longPressed = true;
+    focusCell = {sid, date};
+    if (!document.getElementById('menu')) cellMenu(pressStart.x, pressStart.y, sid, date);
+  }, 480);
+});
+host.addEventListener('pointermove', e => {
+  if (pressTimer && pressStart
+      && Math.hypot(e.clientX - pressStart.x, e.clientY - pressStart.y) > 10) cancelPress();
+});
+const endPress = () => {
+  cancelPress();
+  if (longPressed){                              // гасим только клик от этого же касания
+    longPressed = false; suppressClick = true;
+    setTimeout(() => suppressClick = false, 300);
+  }
+};
+host.addEventListener('pointerup', endPress);
+host.addEventListener('pointercancel', endPress);
+
+host.addEventListener('click', e => {
+  if (suppressClick){ suppressClick = false; return }
+  const nm = e.target.closest('.namecell[data-student]');
+  if (nm){ studentPanel(+nm.dataset.student); return }
+  const c = e.target.closest('td.day');
+  if (c){ focusCell = {sid:+c.dataset.s, date:c.dataset.d}; toggleHeld(focusCell.sid, focusCell.date); return }
+
+  // экраны «Финансы» и «Ученики»
+  const range = e.target.closest('[data-range]');
+  if (range){ moneyMonths = +range.dataset.range; render(); return }
+  const scope = e.target.closest('[data-scope]');
+  if (scope){ peopleScope = scope.dataset.scope; render(); return }
+  const open = e.target.closest('[data-open]');
+  if (open){ studentPanel(+open.dataset.open); return }
+  const un = e.target.closest('[data-unarch]');
+  if (un){
+    const s = data.students.find(x => x.id === +un.dataset.unarch);
+    commit({kind:'student', key:String(s.id), value:{...s, archived:0}},
+           {kind:'student', studentId:s.id, title:`${s.name} возвращён(а) из архива`, sub:'снова в сетке'});
+    toast('Ученик снова в сетке', 'ok'); return;
+  }
+  const link = e.target.closest('.rowlink[data-student]');
+  if (link){ studentPanel(+link.dataset.student) }
+});
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]');
+  if (!b) return;
+  mode = b.dataset.m;
+  document.getElementById('search').placeholder = mode === 'grid' ? 'Поиск ученика' : 'Фильтр по имени';
+  render();
+});
+host.addEventListener('contextmenu', e => {
+  const c = e.target.closest('td.day'); if (!c) return;
+  e.preventDefault();
+  focusCell = {sid:+c.dataset.s, date:c.dataset.d};
+  cellMenu(e.clientX, e.clientY, focusCell.sid, focusCell.date);
+});
+document.getElementById('attention').addEventListener('click', e => {
+  const ch = e.target.closest('[data-student]');
+  if (ch) studentPanel(+ch.dataset.student);
+});
+document.addEventListener('click', e => {if (!e.target.closest('#menu') && !e.target.closest('#more')) closeMenu()});
+
+document.getElementById('prev').onclick = () => {view.setDate(1); view.setMonth(view.getMonth()-1); render()};
+document.getElementById('next').onclick = () => {view.setDate(1); view.setMonth(view.getMonth()+1); render()};
+document.getElementById('today').onclick = () => {view = new Date(); render()};
+document.getElementById('search').oninput = e => {filter = e.target.value; render()};
+document.getElementById('addStudent').onclick = newStudentDialog;
+document.getElementById('addPayment').onclick = () => paymentDialog(null);
+document.getElementById('undo').onclick = undo;
+document.getElementById('redo').onclick = redo;
+document.getElementById('history').onclick = () => historyPanel();
+document.getElementById('more').onclick = e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  moreMenu(r.right - 250, r.bottom + 6);
+};
+
+document.getElementById('remind').addEventListener('click', e => {
+  if (e.target.closest('[data-save]')) exportJSON();
+  else if (e.target.closest('[data-later]')){
+    data.settings.exportSnoozeUntil = Date.now() + 7 * 86400e3;
+    persist(); render();
+  }
+});
+document.getElementById('filebar').addEventListener('click', e => {
+  if (e.target.closest('[data-connect]')) connectFile();
+  else if (e.target.closest('[data-skip]')){
+    idb.del('handle'); fileHandle = null; fileState = 'off'; render();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeMenu();
+  if (document.querySelector('.overlay')) return;
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z'){
+    e.preventDefault(); e.shiftKey ? redo() : undo(); return;
+  }
+  if (typing) return;
+  if (!focusCell) return;
+  const move = (dx, dy) => {
+    const list = visibleStudents(), i = list.findIndex(s => s.id === focusCell.sid);
+    if (i < 0) return;
+    const ni = Math.max(0, Math.min(list.length-1, i + dy));
+    const d = parseISO(focusCell.date); d.setDate(d.getDate() + dx);
+    focusCell = {sid:list[ni].id, date:iso(d)};
+    if (d.getMonth() !== view.getMonth() || d.getFullYear() !== view.getFullYear()) view = new Date(d);
+    render();
+    const el = document.querySelector('td.day.focus');
+    if (el) el.scrollIntoView({block:'nearest', inline:'nearest'});
+  };
+  if (e.key === 'ArrowRight'){ e.preventDefault(); move(1,0) }
+  else if (e.key === 'ArrowLeft'){ e.preventDefault(); move(-1,0) }
+  else if (e.key === 'ArrowDown'){ e.preventDefault(); move(0,1) }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); move(0,-1) }
+  else if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); toggleHeld(focusCell.sid, focusCell.date) }
+  else if (e.key === 'Backspace' || e.key === 'Delete'){ e.preventDefault();
+    if (getLesson(focusCell.sid, focusCell.date)) setStatus(focusCell.sid, focusCell.date, null) }
+  else {
+    const st = Object.entries(STATUS).find(([,v]) => v.key === e.key);
+    if (st){ e.preventDefault(); setStatus(focusCell.sid, focusCell.date, st[0]) }
+  }
+});
+
+/* ═══════════════════════════  СТАРТ  ═══════════════════════════ */
+
+data = loadStore();
+const firstRun = !data;
+data = normalize(data || emptyData());
+document.documentElement.dataset.theme = data.settings.theme;
+claimTab();
+render();
+// офлайн-режим при установке на телефон (работает только с веб-адреса, не с file://)
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0)
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+
+if (firstRun){
+  showWelcome();                                 // данные не сохраняются, пока не сделан выбор
+}else{
+  if (loadedFrom === 'snapshot')
+    toast('Основное хранилище было повреждено — данные восстановлены из снимка', 'warn');
+  writeSnapshot('boot');                         // первый запуск за день = дневной снимок
+  if (loadedFrom !== 'store') persist();         // миграция со старого ключа или снимка
+  initFile();                                    // если данные привязаны к файлу — подхватываем
+}
+
+// точка входа для автоматических проверок
+window.__journal = {
+  get data(){return data}, calc, metrics, monthlyStats, setStatus, toggleHeld, seed, render, persist,
+  undo, redo, revertEntry, commit, apply,
+  startClean, startDemo, importData, exportJSON, snapshots, restoreSnapshot, flushNow,
+  get undoDepth(){return undoStack.length}, get redoDepth(){return redoStack.length},
+  get loadedFrom(){return loadedFrom}, get fileState(){return fileState},
+  reset(){data = seed(); undoStack = []; redoStack = []; mode = 'grid'; persist(); render()},
+  setView(d){view = new Date(d); render()},
+  setMode(m){mode = m; render()},
+  setRange(n){moneyMonths = n; render()},
+};
+</script>
+</body>
+</html>
