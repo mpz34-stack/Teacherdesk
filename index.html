@@ -30,7 +30,7 @@
   --radius:10px; --radius-sm:7px;
   --shadow-1:0 1px 2px rgba(16,22,38,.06),0 1px 1px rgba(16,22,38,.04);
   --shadow-2:0 12px 34px rgba(16,22,38,.16),0 2px 8px rgba(16,22,38,.08);
-  --row-h:38px; --col-w:34px; --pane-w:224px;
+  --row-h:38px; --col-w:34px; --pane-w:268px;
 }
 html[data-theme="dark"]{
   --bg:#101318; --surface:#171b21; --surface-2:#1c2129; --sunken:#0d1015;
@@ -143,11 +143,17 @@ html[data-theme="dark"] tbody tr:hover td.day:not(.filled){background:var(--surf
 }
 .nm{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px;letter-spacing:-.1px}
 .nm .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub{display:flex;gap:9px;color:var(--muted);font-size:11px;margin-top:1px;align-items:baseline}
+.balnum{margin-left:auto;font-size:14.5px;font-weight:700;letter-spacing:-.3px;flex:none}
+.balnum.warn{color:var(--warn)}
+.balnum.zero{color:var(--danger)}
+.balnum.debt{color:var(--debt)}
+.sub{display:flex;gap:8px;color:var(--muted);font-size:11px;margin-top:1px;align-items:baseline;white-space:nowrap}
 .sub b{color:var(--ink-2);font-weight:650}
-.sub .bal-warn b{color:var(--warn)}
-.sub .bal-zero b{color:var(--danger)}
-.sub .bal-debt b{color:var(--debt)}
+.qpay{display:none;margin-left:auto;padding:1px 8px;font-size:10.5px;border-radius:6px;
+      color:var(--accent-ink);border-color:var(--accent-soft);background:var(--accent-soft)}
+.qpay:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+tbody tr:hover .qpay{display:inline-block}
+@media (pointer:coarse){ tbody tr:hover .qpay{display:none} }
 .daycol{width:var(--col-w);min-width:var(--col-w);text-align:center;line-height:1.15}
 .dnum{font-size:12px;font-weight:600}
 .dwd{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
@@ -320,7 +326,9 @@ td.day{-webkit-touch-callout:none}
   .logrow button{opacity:1}
 }
 @media (max-width:760px){
-  :root{--pane-w:132px}
+  :root{--pane-w:158px}
+  .balnum{font-size:13px}
+  .sub span:nth-child(3){display:none}   /* дату оплаты на телефоне прячем — важнее цена и месяц */
   .brand{display:none}
   header{padding:7px 8px;gap:5px}
   header button{padding:5px 8px;font-size:12px}
@@ -1032,7 +1040,7 @@ function renderGrid(){
   const byCell = {};
   data.lessons.forEach(l => byCell[l.studentId + '|' + l.date] = l);
 
-  let h = '<table><thead><tr><th class="corner namecell">Ученик · остаток · цена</th>';
+  let h = '<table><thead><tr><th class="corner namecell">Ученик · осталось уроков · за месяц</th>';
   days.forEach(d => {
     const w = d.getDay() === 0 || d.getDay() === 6, k = iso(d);
     h += `<th class="daycol${k === todayIso ? ' today' : ''}${w ? ' weekend' : ''}${d.getDay() === 1 ? ' wk' : ''}">
@@ -1040,16 +1048,25 @@ function renderGrid(){
   });
   h += '<th class="filler"></th></tr></thead><tbody>';
 
+  const viewKey = view.getFullYear() + '-' + String(view.getMonth() + 1).padStart(2, '0');
   students.forEach(s => {
     const c = calc(s.id);
     const dot = c.level === 'ok' ? '' : `<span class="dot ${c.level}"></span>`;
-    const left = c.balance < 0
-      ? `<span class="bal-debt"><b>−${c.debt}</b> в долг</span>`
-      : `<span class="bal-${c.level}"><b>${c.leftInCurrent}</b> из ${c.current ? c.current.lessons : 0}</span>`;
+    // главная метрика — общий накопленный баланс по всем пакетам, а не текущий пакет
+    const balTxt = c.balance < 0 ? '−' + c.debt : c.balance;
+    const balTitle = `Осталось оплаченных уроков: ${c.balance}`
+      + ` · куплено всего: ${c.totalBought} · проведено: ${c.totalConsumed}`
+      + (c.current ? ` · из последнего пакета: ${c.leftInCurrent} из ${c.current.lessons}` : '');
+    const inM = data.lessons.filter(l => l.studentId === s.id && l.consumes
+                                    && monKey(l.date) === viewKey).length;
     const arch = s.archived ? ' <span class="badge">архив</span>' : '';
-    h += `<tr><td class="namecell" data-student="${s.id}" title="Открыть карточку">
-            <div class="nm">${dot}<span class="name">${esc(s.name)}</span>${arch}</div>
-            <div class="sub">${left}<span>${money(s.defaultPrice, s.currency)}</span></div>
+    h += `<tr><td class="namecell" data-student="${s.id}" title="${esc(balTitle)}">
+            <div class="nm">${dot}<span class="name">${esc(s.name)}</span>${arch}
+              <span class="balnum ${c.level === 'ok' ? '' : c.level}">${balTxt}</span></div>
+            <div class="sub"><span>${money(s.defaultPrice, s.currency)}</span>
+              <span>мес: <b>${inM}</b></span>
+              <span>опл. ${c.current ? fmtDate(c.current.purchasedOn).slice(0, 5) : '—'}</span>
+              <button class="qpay" data-pay="${s.id}" title="Внести оплату">+ оплата</button></div>
           </td>`;
     days.forEach(d => {
       const k = iso(d), l = byCell[s.id + '|' + k];
@@ -1516,7 +1533,9 @@ function studentPanel(sid){
       <td>${money(p.pricePerLesson, p.currency)}</td>
       <td>${money(p.lessons * p.pricePerLesson, p.currency)}</td>
       <td><span class="badge${c.used[i] >= p.lessons ? ' full' : ''}">${c.used[i]} / ${p.lessons}</span></td>
-    </tr>`).reverse().join('') || '<tr><td colspan="5" style="color:var(--muted)">пакетов пока нет</td></tr>';
+      <td><button data-delpkg="${p.id}" title="Удалить оплату"
+        style="padding:2px 8px;font-size:11px;color:var(--danger)">✕</button></td>
+    </tr>`).reverse().join('') || '<tr><td colspan="6" style="color:var(--muted)">пакетов пока нет</td></tr>';
 
   const banner = c.level === 'ok' ? '' : `<div class="banner ${c.level}">${
       c.level === 'debt' ? `Занимается в долг: ${c.debt} урок(а). Нужна оплата.`
@@ -1549,8 +1568,10 @@ function studentPanel(sid){
       отмен: ${m.cancelledFree + m.cancelledLate + m.noShow}</div>
 
     <h3>История пакетов</h3>
-    <table class="mini"><thead><tr><th>Оплата</th><th>Уроков</th><th>Цена</th><th>Сумма</th><th>Израсходовано</th></tr></thead>
+    <table class="mini"><thead><tr><th>Оплата</th><th>Уроков</th><th>Цена</th><th>Сумма</th><th>Израсходовано</th><th></th></tr></thead>
       <tbody>${rows}</tbody></table>
+    <div class="hint">✕ — удалить ошибочную оплату: баланс пересчитается сразу, действие
+      откатывается через Ctrl/Cmd+Z или журнал изменений.</div>
 
     <h3>Настройки ученика</h3>
     <div class="two">
@@ -1600,6 +1621,22 @@ function studentPanel(sid){
             sub:diff.join(', ') || 'заметки и контакт'});
     o.close(); toast('Карточка сохранена', 'ok');
   };
+  o.addEventListener('click', e => {
+    const b = e.target.closest('[data-delpkg]');
+    if (!b) return;
+    const p = data.packages.find(x => x.id === +b.dataset.delpkg);
+    if (!p) return;
+    confirmDialog('Удалить оплату?',
+      `Пакет ${p.lessons} уроков от ${fmtDate(p.purchasedOn)} на ${money(p.lessons * p.pricePerLesson, p.currency)} ` +
+      `будет удалён, баланс сразу уменьшится. Вернуть можно через Ctrl/Cmd+Z или журнал изменений.`,
+      'Удалить оплату', () => {
+        commit({kind:'package', key:String(p.id), value:null},
+               {kind:'package', studentId:sid, title:`Оплата удалена: ${s.name} — ${p.lessons} уроков`,
+                sub:`${money(p.lessons * p.pricePerLesson, p.currency)} · была от ${fmtDate(p.purchasedOn)}`});
+        o.close(); studentPanel(sid);
+        toast('Оплата удалена — баланс пересчитан', 'ok');
+      });
+  });
   o.querySelector('#b-pay').onclick = () => {o.close(); paymentDialog(sid)};
   o.querySelector('#b-arch').onclick = () => {
     const to = s.archived ? 0 : 1;
@@ -1911,6 +1948,8 @@ host.addEventListener('pointercancel', endPress);
 
 host.addEventListener('click', e => {
   if (suppressClick){ suppressClick = false; return }
+  const qp = e.target.closest('.qpay');
+  if (qp){ paymentDialog(+qp.dataset.pay); return }
   const nm = e.target.closest('.namecell[data-student]');
   if (nm){ studentPanel(+nm.dataset.student); return }
   const c = e.target.closest('td.day');

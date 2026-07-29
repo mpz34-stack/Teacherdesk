@@ -197,6 +197,56 @@ const t = (name, ok, extra = '') => {
   t('оплата записана в журнал', await page.evaluate(() =>
     window.__journal.data.audit[0].kind === 'package'));
 
+  // главная страница: накопленный баланс и быстрые действия
+  const katRow = page.locator('td.namecell:has-text("Катя Лунина")');
+  await page.evaluate(() => {
+    const j = window.__journal;
+    const s = j.data.students.find(x => x.name === 'Катя Лунина');
+    j.commit({kind:'package', key:'910001', value:{id:910001, studentId:s.id,
+      purchasedOn:'2026-07-25', lessons:10, pricePerLesson:1800, currency:'RUB',
+      comment:'тест накопления', createdAt:Date.now()}},
+      {kind:'package', studentId:s.id, title:'Оплата: Катя Лунина — 10 уроков', sub:''});
+  });
+  await page.waitForTimeout(200);
+  const katBal = await page.evaluate(() => {
+    const j = window.__journal;
+    return j.calc(j.data.students.find(x => x.name === 'Катя Лунина').id).balance;
+  });
+  t('баланс копится сверх размера пакета', katBal === 17);
+  t('в строке ученика виден общий накопленный баланс',
+    (await katRow.locator('.balnum').innerText()) === '17');
+  t('в строке видны уроки за месяц и дата оплаты',
+    /мес:/.test(await katRow.innerText()) && /опл\./.test(await katRow.innerText()));
+
+  await katRow.hover(); await page.waitForTimeout(150);
+  t('при наведении на строку появляется кнопка оплаты', await katRow.locator('.qpay').isVisible());
+  await katRow.locator('.qpay').click(); await page.waitForTimeout(200);
+  const qsel = await page.locator('#p-st option:checked').innerText();
+  t('быстрая оплата открывается с нужным учеником', qsel === 'Катя Лунина');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+
+  // удаление оплаты из карточки
+  await katRow.click(); await page.waitForTimeout(300);
+  t('у пакетов в карточке есть кнопка удаления', await page.locator('[data-delpkg]').count() >= 2);
+  await page.locator('[data-delpkg="910001"]').click(); await page.waitForTimeout(200);
+  t('удаление оплаты просит подтверждения', await page.locator('.modal:has-text("Удалить оплату")').isVisible());
+  await page.locator('[data-x=yes]').click(); await page.waitForTimeout(300);
+  const afterDel = await page.evaluate(() => {
+    const j = window.__journal;
+    return {bal:j.calc(j.data.students.find(x => x.name === 'Катя Лунина').id).balance,
+            audit:j.data.audit[0].title};
+  });
+  t('удаление оплаты пересчитывает баланс', afterDel.bal === 7);
+  t('удаление оплаты записано в журнал', afterDel.audit.includes('Оплата удалена'));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+  await page.evaluate(() => { window.__journal.undo(); window.__journal.undo(); });
+  await page.waitForTimeout(150);
+  t('оба действия с оплатой откатываются', await page.evaluate(() => {
+    const j = window.__journal;
+    return j.calc(j.data.students.find(x => x.name === 'Катя Лунина').id).balance === 7
+      && !j.data.packages.some(p => p.id === 910001);
+  }));
+
   // сумма пакета пересчитывается из цены
   await page.locator('#addPayment').click(); await page.waitForTimeout(150);
   await page.locator('#p-price').fill('1000'); await page.locator('#p-n').fill('7');
