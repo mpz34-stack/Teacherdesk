@@ -169,7 +169,7 @@ const t = (name, ok, extra = '') => {
 
   // заметка через своё окно (без window.prompt)
   await cell.click({ button: 'right' }); await page.waitForTimeout(120);
-  await page.locator('#menu div[data-a*="заметку"]').click(); await page.waitForTimeout(150);
+  await page.locator('#menu div[data-a^="Заметка"]').click(); await page.waitForTimeout(150);
   await page.locator('#nt').fill('проверка заметки');
   await page.locator('[data-x=s]').click(); await page.waitForTimeout(150);
   t('заметка сохраняется', await page.evaluate(([s, d]) =>
