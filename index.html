@@ -335,7 +335,7 @@ td.day{-webkit-touch-callout:none}
 @media (max-width:760px){
   :root{--pane-w:184px}
   .balnum{font-size:16px}
-  .sub span:nth-child(3){display:none}   /* дату оплаты на телефоне прячем — важнее цена и месяц */
+  .sub span:nth-child(4){display:none}   /* «мес» на телефоне прячем — важнее купл./пров., как в старой таблице */
   .brand{display:none}
   header{padding:calc(7px + env(safe-area-inset-top,0px)) calc(8px + env(safe-area-inset-right,0px)) 7px calc(8px + env(safe-area-inset-left,0px));gap:5px}
   header button{padding:6px 9px;font-size:14px}
@@ -1072,8 +1072,9 @@ function renderGrid(){
             <div class="nm">${dot}<span class="name">${esc(s.name)}</span>${arch}
               <span class="balnum ${c.level === 'ok' ? '' : c.level}">${balTxt}</span></div>
             <div class="sub"><span>${money(s.defaultPrice, s.currency)}</span>
+              <span>купл. <b>${c.totalBought}</b></span>
+              <span>пров. <b>${c.totalConsumed}</b></span>
               <span>мес: <b>${inM}</b></span>
-              <span>опл. ${c.current ? fmtDate(c.current.purchasedOn).slice(0, 5) : '—'}</span>
               <button class="qpay" data-pay="${s.id}" title="Внести оплату">+ оплата</button></div>
           </td>`;
     days.forEach(d => {
